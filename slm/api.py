@@ -1,15 +1,15 @@
 """
-FastAPI server — HTTP API for Copilot agents to query the knowledge layer.
+FastAPI server — HTTP API for the standalone SLM.
 
-Agents call this API to get grounded, source-attributed domain knowledge
-instead of hallucinating. The API supports:
-  - Natural language queries
-  - Category-filtered lookups
-  - Value validation
-  - Knowledge ingestion from workflow runs
-  - Training data recording
+Provides endpoints for:
+  - Asking questions (RAG + local LLM)
+  - Searching knowledge base
+  - Adding new knowledge
+  - Generating test artifacts
+  - Health checks
 
 Start with: python -m slm serve
+Docs at: http://localhost:8100/docs
 """
 
 from typing import Optional
@@ -17,190 +17,151 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from slm.core.knowledge_store import KnowledgeStore, VALID_CATEGORIES
-from slm.core.query_engine import QueryEngine
-from slm.ingestion.workflow_ingestor import WorkflowIngestor
-from slm.training.data_collector import TrainingDataCollector
+from slm.knowledge.store import KnowledgeStore
+from slm.rag.pipeline import RAGPipeline
 
 app = FastAPI(
-    title="SLM Knowledge Layer API",
+    title="SLM - QA & Test Automation Knowledge Model",
     description=(
-        "Domain knowledge retrieval service for TestFlowAutomation Copilot agents. "
-        "Query this API to get grounded facts instead of hallucinating."
+        "A locally-deployed, domain-specific language model for QA testing, "
+        "automation, Private Markets domain, and Jira/Xray integration."
     ),
     version="0.1.0",
 )
 
 _store = KnowledgeStore()
-_engine = QueryEngine(_store)
-_ingestor = WorkflowIngestor(_store)
-_collector = TrainingDataCollector()
+_pipeline = RAGPipeline(_store)
 
 
-class QueryRequest(BaseModel):
-    question: str = Field(..., description="Natural language question")
+class AskRequest(BaseModel):
+    question: str = Field(..., description="Your question")
     category: Optional[str] = Field(None, description="Filter by knowledge category")
-    agent_name: Optional[str] = Field(None, description="Name of the calling agent")
-    story_key: Optional[str] = Field(None, description="Jira story key for context")
-    n_results: int = Field(5, ge=1, le=20, description="Max results")
-    min_confidence: float = Field(0.4, ge=0.0, le=1.0, description="Minimum confidence")
+    n_context: int = Field(5, ge=1, le=20, description="Number of context passages to retrieve")
 
 
-class QueryResponse(BaseModel):
-    query: str
-    grounding_statement: str
-    total_found: int
-    results: list[dict]
-
-
-class ValidateRequest(BaseModel):
-    field_name: str = Field(..., description="Field to validate")
-    value: str = Field(..., description="Value to check")
-    context: str = Field("", description="Additional context")
+class SearchRequest(BaseModel):
+    query: str = Field(..., description="Search query")
+    category: Optional[str] = Field(None, description="Filter by category")
+    n_results: int = Field(5, ge=1, le=50)
+    min_score: float = Field(0.25, ge=0.0, le=1.0)
 
 
 class AddKnowledgeRequest(BaseModel):
     text: str = Field(..., description="Knowledge content")
-    category: str = Field(..., description=f"One of: {sorted(VALID_CATEGORIES)}")
-    source: str = Field(..., description="Source attribution (e.g., 'jira:PULSE-3730')")
-    entry_id: Optional[str] = Field(None, description="Optional explicit ID")
-    metadata: Optional[dict] = Field(None, description="Optional extra metadata")
-
-
-class RecordTrainingRequest(BaseModel):
-    question: str
-    answer: str
-    category: str
-    source: str
-    agent_name: str
-    story_key: Optional[str] = None
-    user_approved: bool = False
-    user_correction: Optional[str] = None
+    category: str = Field(..., description="Category (e.g., qa_methodology, domain_knowledge)")
+    source: str = Field("manual", description="Source attribution")
+    tags: Optional[list[str]] = Field(None, description="Optional tags")
 
 
 @app.get("/health")
 def health():
-    """Health check endpoint."""
-    return {"status": "ok", "entries": _store.count()}
+    total = _store.count()
+    from slm.inference.ollama_client import OllamaClient
+    client = OllamaClient()
+    ollama_ok = client.is_available()
+    return {
+        "status": "ok",
+        "knowledge_entries": total,
+        "ollama_available": ollama_ok,
+        "ollama_model": client.model if ollama_ok else None,
+    }
 
 
-@app.post("/query", response_model=QueryResponse)
-def query(req: QueryRequest):
-    """Query the knowledge layer for domain-grounded answers.
+@app.post("/ask")
+def ask(req: AskRequest):
+    """Ask a question using RAG (retrieval + LLM generation).
 
-    This is the primary endpoint agents should call when they need
-    factual information about the PULSE project, QA workflow, Jira
-    field mappings, test patterns, etc.
+    Retrieves relevant domain knowledge, builds a context-enriched prompt,
+    and generates a grounded response via the local LLM (Ollama).
     """
-    if req.category and req.category not in VALID_CATEGORIES:
-        raise HTTPException(
-            400, f"Invalid category '{req.category}'. Valid: {sorted(VALID_CATEGORIES)}"
-        )
+    from slm.inference.ollama_client import OllamaClient
+    client = OllamaClient()
 
-    response = _engine.ask(
-        question=req.question,
-        category=req.category,
-        agent_name=req.agent_name,
-        story_key=req.story_key,
+    if not client.is_available():
+        context = _pipeline.retrieve(req.question, n_results=req.n_context, category=req.category)
+        return {
+            "answer": None,
+            "error": "Ollama is not running. Install from https://ollama.com and run: ollama pull phi3:mini",
+            "search_results": [
+                {"text": p["text"], "category": p["category"], "source": p["source"], "score": p["score"]}
+                for p in context.passages
+            ],
+        }
+
+    try:
+        response = _pipeline.generate(req.question, category=req.category, n_context=req.n_context)
+        return {
+            "answer": response.answer,
+            "grounded": response.grounded,
+            "confidence": response.confidence,
+            "sources": response.sources,
+            "context_used": response.context_used,
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Generation failed: {str(e)}")
+
+
+@app.post("/search")
+def search(req: SearchRequest):
+    """Search the knowledge base without LLM generation.
+
+    Returns ranked knowledge entries matching the query.
+    """
+    results = _store.search(
+        query=req.query,
         n_results=req.n_results,
-        min_confidence=req.min_confidence,
+        category=req.category,
+        min_score=req.min_score,
     )
-
-    return QueryResponse(
-        query=response.query,
-        grounding_statement=response.grounding_statement,
-        total_found=response.total_found,
-        results=[
-            {
-                "text": r.text,
-                "category": r.category,
-                "source": r.source,
-                "confidence": r.confidence,
-            }
-            for r in response.results
-        ],
-    )
-
-
-@app.post("/validate")
-def validate(req: ValidateRequest):
-    """Validate a field value against stored domain rules.
-
-    Agents call this before committing values to outputs — e.g., to
-    check if a Testing Type value is valid before writing it to Jira.
-    """
-    return _engine.validate_value(req.field_name, req.value, req.context)
+    return {"query": req.query, "total": len(results), "results": results}
 
 
 @app.post("/knowledge")
 def add_knowledge(req: AddKnowledgeRequest):
-    """Add a new knowledge entry to the store.
-
-    Use this to grow the knowledge base with facts learned during
-    workflow runs or manual corrections.
-    """
-    if req.category not in VALID_CATEGORIES:
-        raise HTTPException(
-            400, f"Invalid category '{req.category}'. Valid: {sorted(VALID_CATEGORIES)}"
-        )
-
+    """Add a new knowledge entry to the store."""
     entry_id = _store.add(
         text=req.text,
         category=req.category,
         source=req.source,
-        entry_id=req.entry_id,
-        metadata=req.metadata,
+        tags=req.tags,
     )
-    return {"id": entry_id, "status": "added"}
-
-
-@app.post("/ingest/{story_key}")
-def ingest_run(story_key: str, runs_dir: str):
-    """Ingest outputs from a completed workflow run.
-
-    Call this after a full workflow run completes to capture new
-    domain knowledge from the outputs.
-    """
-    summary = _ingestor.ingest_run(story_key, runs_dir)
-    return summary
-
-
-@app.post("/training/record")
-def record_training(req: RecordTrainingRequest):
-    """Record a training example for future fine-tuning.
-
-    Call this when a user approves or corrects an agent's output
-    to capture high-quality training data.
-    """
-    _collector.record_example(
-        question=req.question,
-        answer=req.answer,
-        category=req.category,
-        source=req.source,
-        agent_name=req.agent_name,
-        story_key=req.story_key,
-        user_approved=req.user_approved,
-        user_correction=req.user_correction,
-    )
-    return {"status": "recorded"}
-
-
-@app.get("/training/stats")
-def training_stats():
-    """Get training data collection statistics.
-
-    Check this to see if you have enough data for fine-tuning (500+ examples).
-    """
-    return _collector.get_stats()
+    return {"id": entry_id, "status": "added", "total_entries": _store.count()}
 
 
 @app.get("/stats")
-def store_stats():
-    """Get knowledge store statistics by category."""
+def stats():
+    """Get knowledge store statistics."""
     total = _store.count()
-    by_category = {}
-    for cat in sorted(VALID_CATEGORIES):
+    categories = {}
+    for cat in ["qa_methodology", "qa_best_practice", "automation_framework",
+                "automation_pattern", "domain_knowledge", "jira_integration"]:
         entries = _store.get_by_category(cat)
         if entries:
-            by_category[cat] = len(entries)
-    return {"total": total, "by_category": by_category}
+            categories[cat] = len(entries)
+    return {"total": total, "by_category": categories}
+
+
+@app.get("/categories")
+def list_categories():
+    """List all knowledge categories with descriptions."""
+    return {
+        "categories": {
+            "qa_methodology": "Testing techniques (BVA, ECP, Decision Table, etc.)",
+            "qa_best_practice": "QA best practices (test design, coverage, traceability)",
+            "automation_framework": "Automation frameworks (Playwright, Selenium, etc.)",
+            "automation_pattern": "Automation design patterns (POM, fixtures, data-driven)",
+            "domain_knowledge": "Private Markets & FOF domain knowledge",
+            "jira_integration": "Jira/Xray field mappings, formats, and workflows",
+        }
+    }
+
+
+@app.post("/context")
+def get_context(req: AskRequest):
+    """Retrieve RAG context without calling the LLM.
+
+    Useful for debugging or when using an external LLM.
+    Returns the formatted context and prompt messages.
+    """
+    result = _pipeline.retrieve_and_format(req.question, n_context=req.n_context)
+    return result

@@ -1,8 +1,15 @@
+# Core dependencies
 sentence-transformers>=2.7.0
 chromadb>=0.5.0
+
+# API server
 fastapi>=0.111.0
 uvicorn>=0.30.0
 pydantic>=2.7.0
-python-dateutil>=2.9.0
-tiktoken>=0.7.0
+
+# Utilities
+requests>=2.32.0
 PyYAML>=6.0.1
+
+# Fine-tuning (install separately when GPU is available)
+# pip install unsloth transformers datasets peft trl

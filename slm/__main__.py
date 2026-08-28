@@ -1,110 +1,174 @@
 """
-CLI entry point for the SLM Knowledge Layer.
+SLM — Standalone QA & Test Automation Knowledge Model
 
 Usage:
-    python -m slm seed              Bootstrap the knowledge store with domain knowledge
-    python -m slm query "question"  Query the knowledge layer
-    python -m slm stats             Show knowledge store and training data stats
-    python -m slm ingest <storyKey> <runs_dir>  Ingest a completed workflow run
-    python -m slm export <path>     Export knowledge store to JSON
-    python -m slm serve             Start the HTTP API server
-    python -m slm training-stats    Show training data collection stats
-    python -m slm export-training <path>  Export training data for fine-tuning
+    python -m slm setup                      First-time setup: load knowledge + check Ollama
+    python -m slm ask "your question"        Ask a question (RAG + local LLM)
+    python -m slm search "query"             Search knowledge base (no LLM)
+    python -m slm stats                      Show knowledge store statistics
+    python -m slm serve                      Start HTTP API server
+    python -m slm generate-training          Generate fine-tuning training data
+    python -m slm export <path>              Export knowledge base to JSON
+    python -m slm add "text" <category>      Add knowledge entry manually
 """
 
 import json
 import sys
+import os
 
 
-def cmd_seed():
-    from slm.seeds.seed_loader import main as seed_main
-    seed_main()
+def cmd_setup():
+    """First-time setup: load knowledge and verify Ollama."""
+    print("=== SLM Setup ===\n")
+
+    print("1. Loading domain knowledge...")
+    from slm.knowledge.store import KnowledgeStore
+    store = KnowledgeStore()
+    summary = store.load_all_knowledge()
+    total = store.count()
+    for fname, count in summary.items():
+        print(f"   {fname}: {count} entries")
+    print(f"   Total: {total} entries loaded\n")
+
+    print("2. Checking Ollama...")
+    from slm.inference.ollama_client import OllamaClient
+    client = OllamaClient()
+    if client.is_available():
+        models = client.list_models()
+        print(f"   Ollama is running. Available models: {', '.join(models) or 'none'}")
+        if not any("phi3" in m or "phi-3" in m or "mistral" in m or "llama" in m for m in models):
+            print(f"   Recommended: ollama pull phi3:mini")
+    else:
+        print("   Ollama is not running.")
+        print("   Install: https://ollama.com/download")
+        print("   Then run: ollama pull phi3:mini")
+
+    print("\n=== Setup complete ===")
+    print(f"Knowledge store: {total} entries")
+    print("Run 'python -m slm ask \"your question\"' to get started")
 
 
-def cmd_query(question: str, category: str = None, n: int = 5):
-    from slm.core.query_engine import QueryEngine
+def cmd_ask(question: str):
+    """Ask a question using RAG + local LLM."""
+    from slm.rag.pipeline import RAGPipeline
+    from slm.inference.ollama_client import OllamaClient
 
-    engine = QueryEngine()
-    response = engine.ask(question, category=category, n_results=n)
+    client = OllamaClient()
+    if not client.is_available():
+        print("Ollama is not running. Starting search-only mode...\n")
+        cmd_search(question)
+        print("\nTo get full answers, install and start Ollama:")
+        print("  https://ollama.com/download")
+        print("  ollama pull phi3:mini")
+        return
 
-    print(f"\nQuery: {response.query}")
-    print(f"Grounding: {response.grounding_statement}")
-    print(f"Results: {response.total_found}\n")
+    pipeline = RAGPipeline()
 
-    for i, r in enumerate(response.results, 1):
-        print(f"  [{i}] (confidence={r.confidence:.0%}) [{r.category}]")
-        print(f"      Source: {r.source}")
-        print(f"      {r.text[:200]}{'...' if len(r.text) > 200 else ''}")
+    try:
+        response = pipeline.generate(question)
+
+        print(f"\n{'='*60}")
+        print(f"Question: {question}")
+        print(f"{'='*60}")
+        print(f"\n{response.answer}")
+        print(f"\n{'─'*60}")
+        print(f"Grounded: {'Yes' if response.grounded else 'No'}")
+        print(f"Confidence: {response.confidence:.0%}")
+        print(f"Sources used: {response.context_used}")
+        for s in response.sources:
+            print(f"  - [{s['source']}] (score: {s['score']:.0%})")
+    except Exception as e:
+        print(f"LLM error: {e}")
+        print("Falling back to knowledge search...\n")
+        cmd_search(question)
+
+
+def cmd_search(query: str, category: str = None, n: int = 5):
+    """Search the knowledge base without LLM."""
+    from slm.knowledge.store import KnowledgeStore
+
+    store = KnowledgeStore()
+    results = store.search(query, n_results=n, category=category)
+
+    print(f"\nSearch: {query}")
+    print(f"Found: {len(results)} results\n")
+
+    for i, r in enumerate(results, 1):
+        print(f"  [{i}] (score: {r['score']:.0%}) [{r['category']}]")
+        print(f"      Source: {r['source']}")
+        text = r['text']
+        print(f"      {text[:200]}{'...' if len(text) > 200 else ''}")
         print()
 
 
 def cmd_stats():
-    from slm.core.knowledge_store import KnowledgeStore
+    """Show knowledge store statistics."""
+    from slm.knowledge.store import KnowledgeStore
 
     store = KnowledgeStore()
     total = store.count()
-    print(f"\nKnowledge Store: {total} entries")
+    print(f"\nKnowledge Store: {total} entries\n")
 
-    if total > 0:
-        from slm.core.knowledge_store import VALID_CATEGORIES
-        for cat in sorted(VALID_CATEGORIES):
-            entries = store.get_by_category(cat)
-            if entries:
-                print(f"  {cat}: {len(entries)}")
+    categories = [
+        "qa_methodology", "qa_best_practice",
+        "automation_framework", "automation_pattern",
+        "domain_knowledge", "jira_integration",
+    ]
+    for cat in categories:
+        entries = store.get_by_category(cat)
+        if entries:
+            print(f"  {cat}: {len(entries)}")
     print()
-
-
-def cmd_ingest(story_key: str, runs_dir: str):
-    from slm.ingestion.workflow_ingestor import WorkflowIngestor
-
-    ingestor = WorkflowIngestor()
-    summary = ingest_summary = ingestor.ingest_run(story_key, runs_dir)
-
-    print(f"\nIngested workflow run for {story_key}")
-    print(f"  Files processed: {', '.join(summary['files_processed'])}")
-    print(f"  Entries added: {summary['entries_added']}")
-    if summary["errors"]:
-        print(f"  Errors: {len(summary['errors'])}")
-        for err in summary["errors"]:
-            print(f"    - {err}")
-    print()
-
-
-def cmd_export(path: str):
-    from slm.core.knowledge_store import KnowledgeStore
-
-    store = KnowledgeStore()
-    store.export_all(path)
-    print(f"\nExported {store.count()} entries to {path}")
 
 
 def cmd_serve(host: str = "0.0.0.0", port: int = 8100):
+    """Start the HTTP API server."""
     import uvicorn
     print(f"\nStarting SLM API server on {host}:{port}")
-    print("Docs available at http://localhost:8100/docs\n")
+    print(f"Docs: http://localhost:{port}/docs\n")
     uvicorn.run("slm.api:app", host=host, port=port, reload=True)
 
 
-def cmd_training_stats():
-    from slm.training.data_collector import TrainingDataCollector
+def cmd_generate_training():
+    """Generate fine-tuning training data from knowledge base."""
+    from slm.training.dataset_generator import DatasetGenerator
 
-    collector = TrainingDataCollector()
-    stats = collector.get_stats()
-    print(f"\nTraining Data Stats:")
-    print(f"  Total examples: {stats.get('total', 0)}")
-    print(f"  High quality: {stats.get('high', 0)}")
-    print(f"  Corrected: {stats.get('corrected', 0)}")
-    print(f"  Unverified: {stats.get('unverified', 0)}")
-    print(f"  Ready for fine-tuning: {stats.get('ready_for_finetuning', False)}")
-    print()
+    output_dir = os.path.join(
+        os.path.dirname(__file__), "..", "knowledge_base", "training_data"
+    )
+    os.makedirs(output_dir, exist_ok=True)
+
+    gen = DatasetGenerator()
+
+    alpaca_path = os.path.join(output_dir, "train_alpaca.jsonl")
+    chatml_path = os.path.join(output_dir, "train_chatml.jsonl")
+    sharegpt_path = os.path.join(output_dir, "train_sharegpt.jsonl")
+
+    n1 = gen.export_alpaca(alpaca_path)
+    n2 = gen.export_chatml(chatml_path)
+    n3 = gen.export_sharegpt(sharegpt_path)
+
+    print(f"\nGenerated training data:")
+    print(f"  Alpaca format:  {alpaca_path} ({n1} examples)")
+    print(f"  ChatML format:  {chatml_path} ({n2} examples)")
+    print(f"  ShareGPT format: {sharegpt_path} ({n3} examples)")
+    print(f"\nTo fine-tune: python slm/training/finetune.py")
 
 
-def cmd_export_training(path: str, min_quality: str = "unverified"):
-    from slm.training.data_collector import TrainingDataCollector
+def cmd_export(path: str):
+    """Export knowledge base to JSON."""
+    from slm.knowledge.store import KnowledgeStore
+    store = KnowledgeStore()
+    store.export(path)
+    print(f"\nExported {store.count()} entries to {path}")
 
-    collector = TrainingDataCollector()
-    count = collector.export_for_finetuning(path, min_quality=min_quality)
-    print(f"\nExported {count} training examples to {path}")
+
+def cmd_add(text: str, category: str, source: str = "manual"):
+    """Add a knowledge entry manually."""
+    from slm.knowledge.store import KnowledgeStore
+    store = KnowledgeStore()
+    entry_id = store.add(text=text, category=category, source=source)
+    print(f"\nAdded entry: {entry_id}")
 
 
 def main():
@@ -114,39 +178,38 @@ def main():
 
     command = sys.argv[1]
 
-    if command == "seed":
-        cmd_seed()
-    elif command == "query":
+    if command == "setup":
+        cmd_setup()
+    elif command == "ask":
         if len(sys.argv) < 3:
-            print("Usage: python -m slm query 'your question'")
+            print("Usage: python -m slm ask 'your question'")
             sys.exit(1)
-        question = sys.argv[2]
+        cmd_ask(sys.argv[2])
+    elif command == "search":
+        if len(sys.argv) < 3:
+            print("Usage: python -m slm search 'query' [category]")
+            sys.exit(1)
         category = sys.argv[3] if len(sys.argv) > 3 else None
-        cmd_query(question, category)
+        cmd_search(sys.argv[2], category)
     elif command == "stats":
         cmd_stats()
-    elif command == "ingest":
-        if len(sys.argv) < 4:
-            print("Usage: python -m slm ingest <storyKey> <runs_dir>")
-            sys.exit(1)
-        cmd_ingest(sys.argv[2], sys.argv[3])
+    elif command == "serve":
+        host = sys.argv[2] if len(sys.argv) > 2 else "0.0.0.0"
+        port = int(sys.argv[3]) if len(sys.argv) > 3 else 8100
+        cmd_serve(host, port)
+    elif command == "generate-training":
+        cmd_generate_training()
     elif command == "export":
         if len(sys.argv) < 3:
             print("Usage: python -m slm export <output_path>")
             sys.exit(1)
         cmd_export(sys.argv[2])
-    elif command == "serve":
-        host = sys.argv[2] if len(sys.argv) > 2 else "0.0.0.0"
-        port = int(sys.argv[3]) if len(sys.argv) > 3 else 8100
-        cmd_serve(host, port)
-    elif command == "training-stats":
-        cmd_training_stats()
-    elif command == "export-training":
-        if len(sys.argv) < 3:
-            print("Usage: python -m slm export-training <output_path>")
+    elif command == "add":
+        if len(sys.argv) < 4:
+            print("Usage: python -m slm add 'text' <category> [source]")
             sys.exit(1)
-        min_q = sys.argv[3] if len(sys.argv) > 3 else "unverified"
-        cmd_export_training(sys.argv[2], min_q)
+        source = sys.argv[4] if len(sys.argv) > 4 else "manual"
+        cmd_add(sys.argv[2], sys.argv[3], source)
     else:
         print(f"Unknown command: {command}")
         print(__doc__)

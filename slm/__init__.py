@@ -1,11 +1,15 @@
 """
-SLM - Small Language Model Knowledge Layer for TestFlowAutomation.
+SLM — Standalone Small Language Model for QA & Test Automation.
 
-A domain-grounded knowledge retrieval system that Copilot agents query
-to reduce hallucination and get accurate, source-attributed answers.
+A locally-deployed, domain-specific language model covering:
+- QA testing methodologies and best practices
+- Test automation (Playwright, Selenium, API testing)
+- Private Markets & FOF domain knowledge
+- Jira/Xray test management integration
+- Test case generation from requirements
+- Data quality validation and testing
 
-Phase 1: RAG-based retrieval with embedding search (CPU-friendly)
-Phase 2: Fine-tuned SLM when sufficient training data accumulates
+Deployment: Ollama (local) with RAG-based knowledge grounding.
 """
 
 __version__ = "0.1.0"
