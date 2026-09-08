@@ -134,6 +134,38 @@ defaults:
     datetime_format: "ISO-8601"
     financial_amounts: "string decimal (no floating point)"
 
+  # Automation defaults (projects override with their specific framework)
+  automation:
+    minimum_automation_rate: 60.0
+    flaky_threshold: 5.0
+    ci_integration_required: true
+    frameworks_supported:
+      - "Playwright"
+      - "Cypress"
+      - "Selenium"
+      - "RestAssured"
+      - "pytest"
+      - "JUnit"
+      - "TestNG"
+      - "k6"
+      - "JMeter"
+
+  # Security baseline (org-wide minimum — projects can add, not weaken)
+  security:
+    sast_required: true
+    dependency_scan_required: true
+    secrets_scan_required: true
+    owasp_compliance_required: true
+    dast_required_for_web_apps: true
+    pentest_frequency: "annually"
+    severity_elevation_for_financial: true
+    scan_on_pr: true
+    scan_on_release: true
+    block_release_on:
+      - "CRITICAL vulnerability unresolved"
+      - "Active secrets in codebase"
+      - "OWASP A01-A03 failures"
+
   # Testing types recognized by Jira/Xray (org-wide)
   testing_types:
     valid_values:
@@ -188,10 +220,16 @@ org_pipelines:
       - agent: "team-conductors"
         purpose: "Teams execute their story workflows in parallel"
         parallel: true
+      - agent: "automation-agent"
+        purpose: "Analyze new test cases for automation candidacy"
+        mode: "analyze"
+      - agent: "security-testing-agent"
+        purpose: "Scan sprint code changes for security issues"
+        mode: "sast"
       - agent: "regression-impact-agent"
         purpose: "Cross-team regression scope"
       - agent: "test-metrics-agent"
-        purpose: "Sprint dashboard"
+        purpose: "Sprint dashboard (includes automation and security metrics)"
       - agent: "release-readiness-agent"
         purpose: "Sprint go/no-go"
 
@@ -202,12 +240,18 @@ org_pipelines:
         purpose: "Full release dependency scan"
       - agent: "api-contract-testing-agent"
         purpose: "Validate all modified service contracts"
+      - agent: "security-testing-agent"
+        purpose: "Full security assessment (SAST + dependency + secrets + OWASP)"
+        mode: "full"
       - agent: "compliance-audit-agent"
-        purpose: "Regulatory compliance verification"
+        purpose: "Regulatory compliance verification (includes security findings)"
+      - agent: "automation-agent"
+        purpose: "Automation health check and coverage report"
+        mode: "health"
       - agent: "regression-impact-agent"
         purpose: "Full release regression scope"
       - agent: "test-metrics-agent"
-        purpose: "Release quality report"
+        purpose: "Release quality report (includes automation and security metrics)"
       - agent: "release-readiness-agent"
         purpose: "Final go/no-go decision"
 

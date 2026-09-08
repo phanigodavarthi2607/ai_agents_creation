@@ -158,6 +158,32 @@ testing_type_mapping:
   _default: "Functional"
 
 # ─────────────────────────────────────────────────────────
+# AUTOMATION CONFIGURATION
+# ─────────────────────────────────────────────────────────
+automation:
+  framework: "Playwright"
+  language: "TypeScript"
+  repository: ""
+  ci_pipeline: "github-actions"
+  patterns: ["PageObjectModel", "fixtures"]
+  locator_strategy: "data-testid"
+  minimum_automation_rate: 65.0
+
+# ─────────────────────────────────────────────────────────
+# SECURITY CONFIGURATION
+# ─────────────────────────────────────────────────────────
+security:
+  classification: "confidential"
+  scan_tools:
+    sast: "SonarQube"
+    dast: "OWASP ZAP"
+    dependency_scanner: "Snyk"
+    secrets_scanner: "TruffleHog"
+  owasp_profile: "full"
+  pentest_frequency: "quarterly"
+  excluded_paths: []
+
+# ─────────────────────────────────────────────────────────
 # DOMAIN KNOWLEDGE
 # Path to project-specific knowledge files loaded into the SLM.
 # ─────────────────────────────────────────────────────────

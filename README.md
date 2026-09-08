@@ -324,6 +324,8 @@ quality_gates_overrides:
 | Organization Conductor | `org-conductor-agent.md` | Orchestrates cross-project workflows |
 | Release Readiness | `release-readiness-agent.md` | 10-gate go/no-go, uses strictest thresholds across projects |
 | Compliance & Audit | `compliance-audit-agent.md` | Org frameworks + project-specific controls |
+| Security Testing | `security-testing-agent.md` | SAST, DAST, dependency scan, secrets detection, OWASP, pentest coordination |
+| Automation | `automation-agent.md` | Candidacy analysis, script generation, CI/CD integration, flaky test management |
 | Cross-Team Dependency | `cross-team-dependency-agent.md` | Intra- and cross-project dependency tracking |
 | Test Metrics | `test-metrics-agent.md` | Per-project and org-wide dashboards |
 | Regression Impact | `regression-impact-agent.md` | Cross-project service dependency analysis |
@@ -375,7 +377,7 @@ Settings are resolved in this priority order:
 @org-conductor-agent Sprint coordination for [PFPT Sprint 24, GX Sprint 12]
 ```
 
-Resolves participating projects → runs dependency analysis → validates environments → team conductors execute in parallel → regression → metrics → readiness.
+Resolves participating projects → dependency analysis → environment validation → team conductors execute in parallel → **automation candidacy analysis** → **security scanning (SAST)** → regression → metrics → readiness.
 
 ### 2. Release QA
 
@@ -384,9 +386,32 @@ Resolves participating projects → runs dependency analysis → validates envir
 @org-conductor-agent Release QA for Q3 2026 Release [PULSE, GXNG, ALPHA]
 ```
 
-Cross-project dependency scan → API contract validation → compliance audit → regression → metrics → go/no-go.
+Cross-project dependency scan → API contract validation → **full security assessment (SAST + dependencies + secrets + OWASP)** → compliance audit → **automation health check** → regression → metrics → go/no-go.
 
-### 3. Defect Escalation
+### 3. Security Scanning
+
+```
+@security-testing-agent SAST scan for PULSE-3730
+@security-testing-agent Full security assessment for project GXNG
+@security-testing-agent Dependency scan for ALPHA release 2.0
+@security-testing-agent Secrets detection for project PULSE
+```
+
+Scans code, dependencies, secrets, and OWASP compliance. CRITICAL findings block release.
+
+### 4. Automation Management
+
+```
+@automation-agent Analyze PULSE-3730 for automation candidacy
+@automation-agent Generate scripts for PULSE-3730
+@automation-agent Health check for project GXNG
+@automation-agent Flaky test analysis for project ALPHA
+@automation-agent Automation report for all projects
+```
+
+Analyzes test cases for automation ROI, generates scripts in the project's framework, and tracks automation health.
+
+### 5. Defect Escalation
 
 ```
 @org-conductor-agent Defect escalation for PULSE-4521
@@ -458,6 +483,8 @@ Per-project and aggregated metrics → compliance → environment health → ris
   org-conductor-agent.md            # Cross-project orchestrator
   release-readiness-agent.md
   compliance-audit-agent.md
+  security-testing-agent.md         # SAST, DAST, OWASP, secrets, pentest
+  automation-agent.md               # Script generation, CI/CD, flaky tests
   cross-team-dependency-agent.md
   test-metrics-agent.md
   regression-impact-agent.md

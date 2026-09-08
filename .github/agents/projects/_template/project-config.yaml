@@ -207,6 +207,41 @@ testing_type_mapping:
   _default: "Functional"          # Fallback for unmapped values
 
 # ─────────────────────────────────────────────────────────
+# AUTOMATION CONFIGURATION
+# Define the test automation framework, language, and patterns
+# used by this project. The Automation Agent reads this to
+# generate scripts in the correct framework.
+# ─────────────────────────────────────────────────────────
+automation:
+  framework: ""                   # e.g., "Playwright", "Cypress", "pytest", "RestAssured"
+  language: ""                    # e.g., "TypeScript", "Python", "Java"
+  repository: ""                  # Repo URL where automation code lives
+  ci_pipeline: ""                 # e.g., "github-actions", "jenkins", "gitlab-ci"
+  patterns: []                    # e.g., ["PageObjectModel", "fixtures"]
+  locator_strategy: ""            # e.g., "data-testid", "aria-label", "css"
+  # minimum_automation_rate: 60.0 # Override org default if needed (stricter only)
+
+# ─────────────────────────────────────────────────────────
+# SECURITY CONFIGURATION
+# Define the security testing profile for this project.
+# Org-level security baseline always applies. Add extras here.
+# ─────────────────────────────────────────────────────────
+security:
+  classification: "internal"      # public | internal | confidential | restricted
+  scan_tools:
+    sast: ""                      # e.g., "SonarQube", "Semgrep", "CodeQL"
+    dast: ""                      # e.g., "OWASP ZAP", "Burp Suite"
+    dependency_scanner: ""        # e.g., "Snyk", "Dependabot", "OWASP Dependency-Check"
+    secrets_scanner: ""           # e.g., "TruffleHog", "GitLeaks", "detect-secrets"
+  owasp_profile: "full"           # full | web-only | api-only | custom
+  pentest_frequency: "annually"   # annually | semi-annually | quarterly | per-release
+  excluded_paths: []              # Paths excluded from scanning (must have justification)
+  # Example:
+  # excluded_paths:
+  #   - path: "vendor/"
+  #     reason: "Third-party vendored code, scanned upstream"
+
+# ─────────────────────────────────────────────────────────
 # DOMAIN KNOWLEDGE
 # Path to project-specific knowledge files for the SLM.
 # Add JSON files with domain knowledge under your project's
