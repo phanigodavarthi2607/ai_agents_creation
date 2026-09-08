@@ -1,0 +1,5 @@
+# Vector database files (regenerated from seeds)
+.vectordb/
+
+# Training data (accumulated during workflow runs)
+training_data/

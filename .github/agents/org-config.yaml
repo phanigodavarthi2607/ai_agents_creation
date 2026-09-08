@@ -1,0 +1,185 @@
+# State Street Organization QA Agent Configuration
+# This file defines the organization-level settings for QA agents
+
+organization:
+  name: "State Street"
+  qa_division: "Enterprise QA"
+
+# Team registry - maps teams to their domains and Jira projects
+teams:
+  pfpt:
+    name: "Private Fund Processing Technology"
+    domain: "FOF"
+    jira_project: "PULSE"
+    sprint_prefix: "PFPT"
+    lead: ""  # Set per team
+    environments: ["QA", "QA2", "Staging"]
+  pfpm:
+    name: "Private Markets"
+    domain: "Private_Markets"
+    jira_project: "PULSE"
+    sprint_prefix: "PFPM"
+    lead: ""  # Set per team
+    environments: ["QA", "Staging", "UAT"]
+
+# Service registry - maps services to owning teams
+service_registry:
+  # Add services as they are onboarded
+  # service-name:
+  #   team: pfpt|pfpm
+  #   type: api|backend|data-pipeline|ui
+  #   dependencies: [other-service-1, other-service-2]
+  #   health_endpoint: /health
+
+# Quality gates - organization-wide thresholds
+quality_gates:
+  test_execution:
+    pass_rate_threshold: 95.0
+    gate_id: "G1"
+  critical_defects:
+    max_open_s1: 0
+    s2_workaround_required: true
+    gate_id: "G2"
+  regression:
+    all_p1_suites_required: true
+    gate_id: "G3"
+  coverage:
+    requirements_coverage_threshold: 85.0
+    mandatory_categories: ["UI", "API", "Backend", "DataComparison"]
+    gate_id: "G4"
+  api_contracts:
+    no_breaking_changes: true
+    gate_id: "G5"
+  compliance:
+    no_critical_findings: true
+    sox_controls_verified: true
+    gate_id: "G6"
+  cross_team_dependencies:
+    no_blocked_dependencies: true
+    gate_id: "G7"
+  environment:
+    production_like_validated: true
+    gate_id: "G8"
+  rollback:
+    procedure_documented: true
+    procedure_tested: true
+    gate_id: "G9"
+  sign_off:
+    all_team_leads: true
+    gate_id: "G10"
+
+# Severity matrix
+severity_matrix:
+  S1:
+    name: "Critical"
+    definition: "Production down, data corruption, financial calculation errors, regulatory compliance breach, security vulnerability"
+    sla_hours: 4
+    escalation: "immediate"
+  S2:
+    name: "High"
+    definition: "Core workflow blocked, incorrect data displayed, significant performance degradation, no workaround"
+    sla_hours: 48
+    escalation: "same-day"
+  S3:
+    name: "Medium"
+    definition: "Feature partially broken with workaround, UI/UX issues, non-critical data issues"
+    sla_hours: 168
+    escalation: "next-sprint"
+  S4:
+    name: "Low"
+    definition: "Cosmetic issues, minor UI inconsistencies, documentation errors"
+    sla_hours: 336
+    escalation: "backlog"
+
+# Defect root cause taxonomy
+defect_taxonomy:
+  categories:
+    - "Code Defect"
+    - "Data Issue"
+    - "Integration"
+    - "Configuration"
+    - "Infrastructure"
+    - "Requirements Gap"
+    - "Regression"
+    - "Environment"
+
+# API standards
+api_standards:
+  naming: "RESTful"
+  versioning: "URL path-based"
+  error_format: "error_code, message, correlation_id"
+  pagination: "cursor-based or offset/limit"
+  datetime_format: "ISO-8601"
+  financial_amounts: "string decimal (no floating point)"
+
+# Testing type normalization (Jira/Xray)
+testing_types:
+  valid_values:
+    - "Functional"
+    - "Non Functional"
+    - "Regression"
+    - "End to End"
+    - "Negative"
+
+# Compliance frameworks
+compliance:
+  frameworks:
+    - "SOX Section 404"
+    - "SEC 17a-4"
+    - "OCC Guidelines"
+    - "GDPR (data privacy in test environments)"
+  mandatory_controls:
+    segregation_of_duties: true
+    financial_dual_verification: true
+    audit_trail: true
+    data_masking: true
+
+# Agent pipeline configuration
+agent_pipelines:
+  # Team-level story workflow (existing)
+  story_workflow:
+    agents:
+      - knowledge-base-agent
+      - story-agent
+      - analysis-agent
+      - test-planning-agent
+      - test-design-agent
+      - test-review-agent
+      - publish-jira-agent
+    orchestrator: conductor-agent
+    gates:
+      - KB_APPROVED
+      - DISCOVERY_APPROVED
+      - QUALITY_APPROVED
+      - APPROVE_FOR_JIRA
+
+  # Organization-level sprint coordination
+  sprint_coordination:
+    agents:
+      - cross-team-dependency-agent
+      - environment-validation-agent
+      - regression-impact-agent
+      - test-metrics-agent
+      - release-readiness-agent
+    orchestrator: org-conductor-agent
+
+  # Organization-level release workflow
+  release_workflow:
+    agents:
+      - cross-team-dependency-agent
+      - api-contract-testing-agent
+      - compliance-audit-agent
+      - regression-impact-agent
+      - test-metrics-agent
+      - release-readiness-agent
+    orchestrator: org-conductor-agent
+
+  # Defect escalation workflow
+  defect_escalation:
+    agents:
+      - defect-triage-agent
+      - regression-impact-agent
+      - cross-team-dependency-agent
+      - release-readiness-agent
+    orchestrator: org-conductor-agent
+    trigger: "S1 or S2 defect reported"

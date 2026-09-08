@@ -1,0 +1,74 @@
+[
+  {
+    "id": "auto_playwright_001",
+    "text": "Playwright is a cross-browser automation framework supporting Chromium, Firefox, and WebKit. Key features: auto-wait for elements, network interception, multiple browser contexts, tracing, and screenshot/video capture. Use Page Object Model (POM) for maintainable test structure. Playwright supports TypeScript, JavaScript, Python, Java, and C#.",
+    "category": "automation_framework",
+    "tags": ["playwright", "browser", "automation"]
+  },
+  {
+    "id": "auto_playwright_002",
+    "text": "Playwright best practices: Use data-testid attributes for reliable selectors. Avoid XPath and CSS selectors tied to styling. Use web-first assertions (expect(locator).toBeVisible()). Leverage fixtures for test isolation. Use test.describe for grouping. Run tests in parallel with workers. Use trace viewer for debugging failed tests.",
+    "category": "automation_framework",
+    "tags": ["playwright", "best-practice", "selectors"]
+  },
+  {
+    "id": "auto_playwright_003",
+    "text": "Playwright MCP (Model Context Protocol) integration allows AI agents to control browser sessions programmatically. The playwright-mcp server exposes browser actions as tools that agents can call: navigate, click, fill, screenshot, and assert. This enables AI-driven end-to-end testing where the model decides what to test and how.",
+    "category": "automation_framework",
+    "tags": ["playwright", "mcp", "ai-testing"]
+  },
+  {
+    "id": "auto_api_001",
+    "text": "API Test Automation patterns: Use request/response validation (status code, headers, body schema). Test CRUD operations (Create, Read, Update, Delete). Validate error responses (400, 401, 403, 404, 500). Test pagination, filtering, and sorting. Validate rate limiting behavior. Check content-type headers. Test with valid, invalid, and edge-case payloads.",
+    "category": "automation_pattern",
+    "tags": ["api", "rest", "automation"]
+  },
+  {
+    "id": "auto_api_002",
+    "text": "API Contract Testing verifies that API endpoints conform to their specification (OpenAPI/Swagger). Validate: required fields are present, data types match, enum values are within allowed set, response schema matches spec, and deprecated fields are handled. Use tools like Pact for consumer-driven contract testing between services.",
+    "category": "automation_pattern",
+    "tags": ["api", "contract", "schema-validation"]
+  },
+  {
+    "id": "auto_data_001",
+    "text": "Data Pipeline Test Automation: Validate ETL (Extract, Transform, Load) processes. Key checks: record count reconciliation between source and target, field-level data comparison, null handling verification, data type conversion accuracy, deduplication logic, incremental load correctness, and full refresh accuracy. Schedule automated DQ checks after each pipeline run.",
+    "category": "automation_pattern",
+    "tags": ["data-pipeline", "etl", "data-quality", "automation"]
+  },
+  {
+    "id": "auto_data_002",
+    "text": "Source-to-Target Validation automates comparison between source data and target data after transformation. Steps: 1) Extract source records matching filter criteria, 2) Extract corresponding target records, 3) Compare field-by-field using mapping rules, 4) Report mismatches with row identifiers, 5) Validate aggregations (sums, counts, averages). Handle type conversions and format differences in comparison logic.",
+    "category": "automation_pattern",
+    "tags": ["source-to-target", "data-comparison", "automation"]
+  },
+  {
+    "id": "auto_ci_001",
+    "text": "CI/CD Integration for Test Automation: Run unit tests on every commit. Run integration tests on PR creation. Run E2E tests on merge to main. Use test parallelization to reduce pipeline time. Store test artifacts (screenshots, logs, reports) as pipeline artifacts. Fail the build on test failures. Use retry logic for flaky tests (max 2 retries). Generate test reports (JUnit XML, HTML).",
+    "category": "automation_pattern",
+    "tags": ["ci-cd", "pipeline", "automation"]
+  },
+  {
+    "id": "auto_pattern_001",
+    "text": "Page Object Model (POM): Encapsulate page-specific selectors and actions in dedicated classes. Each page class exposes methods for user actions (login, fillForm, submitOrder). Selectors are private — tests interact only through page methods. Benefits: reduced duplication, easier maintenance when UI changes, readable test code.",
+    "category": "automation_pattern",
+    "tags": ["pom", "design-pattern", "automation"]
+  },
+  {
+    "id": "auto_pattern_002",
+    "text": "Test Fixture Pattern: Set up and tear down test preconditions consistently. Use fixtures for: database seeding, user session creation, API authentication tokens, test data generation, and browser context initialization. Fixtures ensure test isolation — each test starts from a known state. Prefer setup/teardown at the narrowest scope possible.",
+    "category": "automation_pattern",
+    "tags": ["fixture", "design-pattern", "test-isolation"]
+  },
+  {
+    "id": "auto_pattern_003",
+    "text": "Data-Driven Testing: Parameterize test cases with external data sources (CSV, JSON, Excel, database). The same test logic runs with multiple data sets. Benefits: high coverage with minimal code, easy to add new scenarios by adding data rows. Keep test data separate from test logic. Validate data files before test execution.",
+    "category": "automation_pattern",
+    "tags": ["data-driven", "parameterized", "automation"]
+  },
+  {
+    "id": "auto_reporting_001",
+    "text": "Test Reporting: Generate structured reports in JUnit XML for CI integration. Include: test name, status (pass/fail/skip), duration, failure message, and stack trace. For UI tests, attach screenshots on failure. For API tests, attach request/response logs. Aggregate results into dashboards showing pass rate trends, flaky test detection, and coverage metrics.",
+    "category": "automation_pattern",
+    "tags": ["reporting", "metrics", "automation"]
+  }
+]
