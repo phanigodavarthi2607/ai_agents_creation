@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Vector database (regenerated from knowledge files)
+knowledge_base/.vectordb/
+
+# Training data (generated)
+knowledge_base/training_data/
+
+# Fine-tuned models
+models/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Assets (uploaded images)
+assets/

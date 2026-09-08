@@ -1,0 +1,281 @@
+# State Street Organization QA Agent Configuration
+# ================================================
+# This file defines organization-wide DEFAULTS.
+# Each project overrides what it needs in its own project config file
+# at: .github/agents/projects/<project-id>/project-config.yaml
+
+organization:
+  name: "State Street"
+  qa_division: "Enterprise QA"
+
+# ─────────────────────────────────────────────────────────
+# PROJECT REGISTRY
+# Each entry points to a project config file.
+# Agents resolve project context by matching the Jira project key
+# from the storyKey/defectKey prefix (e.g., PULSE-1234 -> "PULSE").
+# ─────────────────────────────────────────────────────────
+project_registry:
+  PULSE:
+    name: "PULSE - Investment Operations"
+    config_path: ".github/agents/projects/pulse/project-config.yaml"
+    active: true
+
+  # ── Examples for other projects ──
+  # GXNG:
+  #   name: "Global Exchange Next Gen"
+  #   config_path: ".github/agents/projects/gxng/project-config.yaml"
+  #   active: true
+  #
+  # CRDM:
+  #   name: "Client Reference Data Management"
+  #   config_path: ".github/agents/projects/crdm/project-config.yaml"
+  #   active: true
+  #
+  # ALPHA:
+  #   name: "Alpha Platform"
+  #   config_path: ".github/agents/projects/alpha/project-config.yaml"
+  #   active: true
+
+# ─────────────────────────────────────────────────────────
+# ORGANIZATION DEFAULTS
+# These apply to ALL projects unless a project overrides them.
+# ─────────────────────────────────────────────────────────
+
+defaults:
+
+  # Severity matrix (shared across all projects)
+  severity_matrix:
+    S1:
+      name: "Critical"
+      definition: "Production down, data corruption, financial calculation errors, regulatory compliance breach, security vulnerability"
+      sla_hours: 4
+      escalation: "immediate"
+    S2:
+      name: "High"
+      definition: "Core workflow blocked, incorrect data displayed, significant performance degradation, no workaround"
+      sla_hours: 48
+      escalation: "same-day"
+    S3:
+      name: "Medium"
+      definition: "Feature partially broken with workaround, UI/UX issues, non-critical data issues"
+      sla_hours: 168
+      escalation: "next-sprint"
+    S4:
+      name: "Low"
+      definition: "Cosmetic issues, minor UI inconsistencies, documentation errors"
+      sla_hours: 336
+      escalation: "backlog"
+
+  # Defect root cause taxonomy (org-wide standard)
+  defect_taxonomy:
+    categories:
+      - "Code Defect"
+      - "Data Issue"
+      - "Integration"
+      - "Configuration"
+      - "Infrastructure"
+      - "Requirements Gap"
+      - "Regression"
+      - "Environment"
+
+  # Quality gates (org-wide minimums — projects can make stricter, not weaker)
+  quality_gates:
+    G1_test_execution:
+      pass_rate_threshold: 95.0
+      description: "All planned tests executed with pass rate above threshold"
+    G2_critical_defects:
+      max_open_s1: 0
+      s2_workaround_required: true
+      description: "Zero open S1 defects; S2 defects must have documented workarounds"
+    G3_regression:
+      all_p1_suites_required: true
+      description: "All P1 regression suites executed and passed"
+    G4_coverage:
+      requirements_coverage_threshold: 85.0
+      description: "Requirements-to-test-case coverage above threshold"
+    G5_api_contracts:
+      no_breaking_changes: true
+      description: "No unresolved breaking API changes"
+    G6_compliance:
+      no_critical_findings: true
+      description: "No CRITICAL compliance/audit findings"
+    G7_cross_team_dependencies:
+      no_blocked_dependencies: true
+      description: "No BLOCKED cross-team dependencies"
+    G8_environment:
+      production_like_validated: true
+      description: "Production-like environment validated before deployment"
+    G9_rollback:
+      procedure_documented: true
+      procedure_tested: true
+      description: "Rollback procedure documented and tested"
+    G10_sign_off:
+      all_team_leads: true
+      description: "All participating team leads have signed off"
+
+  # Compliance frameworks applicable org-wide
+  compliance:
+    frameworks:
+      - "SOX Section 404"
+      - "SEC 17a-4"
+      - "OCC Guidelines"
+      - "GDPR (data privacy in test environments)"
+    mandatory_controls:
+      segregation_of_duties: true
+      audit_trail: true
+      data_masking: true
+
+  # API standards (org-wide)
+  api_standards:
+    naming: "RESTful"
+    versioning: "URL path-based"
+    error_format: "error_code, message, correlation_id"
+    pagination: "cursor-based or offset/limit"
+    datetime_format: "ISO-8601"
+    financial_amounts: "string decimal (no floating point)"
+
+  # Automation defaults (projects override with their specific framework)
+  automation:
+    minimum_automation_rate: 60.0
+    flaky_threshold: 5.0
+    ci_integration_required: true
+    frameworks_supported:
+      - "Playwright"
+      - "Cypress"
+      - "Selenium"
+      - "RestAssured"
+      - "pytest"
+      - "JUnit"
+      - "TestNG"
+      - "k6"
+      - "JMeter"
+
+  # Security baseline (org-wide minimum — projects can add, not weaken)
+  security:
+    sast_required: true
+    dependency_scan_required: true
+    secrets_scan_required: true
+    owasp_compliance_required: true
+    dast_required_for_web_apps: true
+    pentest_frequency: "annually"
+    severity_elevation_for_financial: true
+    scan_on_pr: true
+    scan_on_release: true
+    block_release_on:
+      - "CRITICAL vulnerability unresolved"
+      - "Active secrets in codebase"
+      - "OWASP A01-A03 failures"
+
+  # Testing types recognized by Jira/Xray (org-wide)
+  testing_types:
+    valid_values:
+      - "Functional"
+      - "Non Functional"
+      - "Regression"
+      - "End to End"
+      - "Negative"
+
+  # Default workflow for team-level story processing
+  # Projects can override with completely different blocks/gates
+  default_story_workflow:
+    blocks:
+      - id: "knowledge_base"
+        name: "Knowledge Base"
+        agents: ["knowledge-base-agent", "story-agent"]
+        gate: "KB_APPROVED"
+        description: "Collect domain knowledge and fetch story details"
+
+      - id: "discovery"
+        name: "Discovery"
+        agents: ["analysis-agent", "test-planning-agent"]
+        gate: "DISCOVERY_APPROVED"
+        description: "Analyze story, select testing techniques, build discovery context"
+
+      - id: "quality"
+        name: "Quality"
+        agents: ["test-design-agent", "test-data-agent", "test-review-agent"]
+        gate: "QUALITY_APPROVED"
+        description: "Generate, populate, and review test cases"
+
+      - id: "release"
+        name: "Release"
+        agents: ["publish-jira-agent"]
+        gate: "APPROVE_FOR_JIRA"
+        description: "Publish approved test cases to Jira/Xray"
+    mandatory_coverage_categories: ["UI", "API", "Backend", "DataComparison"]
+
+# ─────────────────────────────────────────────────────────
+# ORGANIZATION-LEVEL AGENT PIPELINES
+# These are cross-project and use org defaults + project overrides.
+# ─────────────────────────────────────────────────────────
+org_pipelines:
+
+  sprint_coordination:
+    description: "Cross-team sprint planning and monitoring"
+    sequence:
+      - agent: "cross-team-dependency-agent"
+        purpose: "Identify inter-team and inter-project dependencies"
+      - agent: "environment-validation-agent"
+        purpose: "Validate all team environments"
+      - agent: "team-conductors"
+        purpose: "Teams execute their story workflows in parallel"
+        parallel: true
+      - agent: "automation-agent"
+        purpose: "Analyze new test cases for automation candidacy"
+        mode: "analyze"
+      - agent: "security-testing-agent"
+        purpose: "Scan sprint code changes for security issues"
+        mode: "sast"
+      - agent: "regression-impact-agent"
+        purpose: "Cross-team regression scope"
+      - agent: "test-metrics-agent"
+        purpose: "Sprint dashboard (includes automation and security metrics)"
+      - agent: "release-readiness-agent"
+        purpose: "Sprint go/no-go"
+
+  release_workflow:
+    description: "Full release quality assessment"
+    sequence:
+      - agent: "cross-team-dependency-agent"
+        purpose: "Full release dependency scan"
+      - agent: "api-contract-testing-agent"
+        purpose: "Validate all modified service contracts"
+      - agent: "security-testing-agent"
+        purpose: "Full security assessment (SAST + dependency + secrets + OWASP)"
+        mode: "full"
+      - agent: "compliance-audit-agent"
+        purpose: "Regulatory compliance verification (includes security findings)"
+      - agent: "automation-agent"
+        purpose: "Automation health check and coverage report"
+        mode: "health"
+      - agent: "regression-impact-agent"
+        purpose: "Full release regression scope"
+      - agent: "test-metrics-agent"
+        purpose: "Release quality report (includes automation and security metrics)"
+      - agent: "release-readiness-agent"
+        purpose: "Final go/no-go decision"
+
+  defect_escalation:
+    description: "S1/S2 defect escalation across projects"
+    trigger: "S1 or S2 defect reported in any project"
+    sequence:
+      - agent: "defect-triage-agent"
+        purpose: "Classify and route"
+      - agent: "regression-impact-agent"
+        purpose: "Cross-project impact analysis"
+      - agent: "cross-team-dependency-agent"
+        purpose: "Identify affected teams"
+      - agent: "release-readiness-agent"
+        purpose: "Update go/no-go assessment"
+
+  quality_assessment:
+    description: "On-demand organization health check"
+    sequence:
+      - agent: "test-metrics-agent"
+        purpose: "Executive dashboard"
+      - agent: "compliance-audit-agent"
+        purpose: "Quick compliance scan"
+      - agent: "environment-validation-agent"
+        purpose: "All environment health"
+      - agent: "release-readiness-agent"
+        purpose: "Overall risk posture"
