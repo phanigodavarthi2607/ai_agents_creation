@@ -1,8 +1,23 @@
-# State Street Organization-Level QA Agent Suite
+# Organization-Level QA Agent Suite
 
-An AI-powered QA agent ecosystem for State Street, providing end-to-end quality assurance automation from individual story testing to organization-wide release readiness across all teams.
+An AI-powered, multi-project QA agent ecosystem providing end-to-end quality assurance automation — from individual story testing to organization-wide release readiness across any number of projects, domains, and teams.
 
-## Architecture Overview
+## Key Design Principle: One System, Any Project
+
+Every project in the organization can have its own:
+- **Domain** (finance, data pipelines, UI platforms, etc.)
+- **Workflow** (different blocks, gates, and agents per project)
+- **Coverage requirements** (different mandatory test categories)
+- **Quality thresholds** (stricter gates for critical projects)
+- **Compliance controls** (project-specific regulatory requirements)
+- **Jira configuration** (different custom fields, CSV formats, link types)
+- **Domain knowledge** (project-specific SLM knowledge base)
+
+No code changes needed. Register a project config file and go.
+
+---
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -10,343 +25,470 @@ An AI-powered QA agent ecosystem for State Street, providing end-to-end quality 
 │                                                                     │
 │  ┌───────────────────────────────────────────────────────────────┐  │
 │  │              Organization Conductor Agent                     │  │
-│  │  Orchestrates cross-team workflows, aggregates org metrics    │  │
-│  └──────────┬───────────────┬──────────────┬────────────────────┘  │
-│             │               │              │                        │
-│  ┌──────────▼──┐  ┌────────▼───┐  ┌──────▼──────┐  ┌──────────┐  │
-│  │ Release     │  │ Compliance │  │ Cross-Team  │  │ Test     │  │
-│  │ Readiness   │  │ & Audit    │  │ Dependency  │  │ Metrics  │  │
-│  └─────────────┘  └────────────┘  └─────────────┘  └──────────┘  │
-│                                                                     │
-│  ┌─────────────┐  ┌────────────┐  ┌─────────────┐  ┌──────────┐  │
-│  │ Regression  │  │ Defect     │  │ Environment │  │ API      │  │
-│  │ Impact      │  │ Triage     │  │ Validation  │  │ Contract │  │
-│  └─────────────┘  └────────────┘  └─────────────┘  └──────────┘  │
-│                                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                    TEAM LEVEL (per team/story)                       │
-│                                                                     │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │              Team Conductor Agent                              │  │
-│  │  KB → Discovery → Quality → Release (per story)               │  │
+│  │       Coordinates across ALL projects and teams               │  │
 │  └──────────┬──────────┬──────────┬──────────┬──────────────────┘  │
 │             │          │          │          │                       │
 │  ┌──────────▼──┐ ┌─────▼────┐ ┌──▼───────┐ ┌▼────────────────┐   │
-│  │ Knowledge   │ │ Story    │ │ Analysis │ │ Test Planning   │   │
-│  │ Base        │ │ Agent    │ │ Agent    │ │ Agent           │   │
+│  │ Release     │ │Compliance│ │Cross-Team│ │ Test Metrics    │   │
+│  │ Readiness   │ │& Audit   │ │Dependency│ │ & Reporting     │   │
+│  └─────────────┘ └──────────┘ └──────────┘ └─────────────────┘   │
+│  ┌─────────────┐ ┌──────────┐ ┌──────────┐ ┌─────────────────┐   │
+│  │ Regression  │ │ Defect   │ │Environmt │ │ API Contract    │   │
+│  │ Impact      │ │ Triage   │ │Validation│ │ Testing         │   │
 │  └─────────────┘ └──────────┘ └──────────┘ └─────────────────┘   │
 │                                                                     │
-│  ┌─────────────┐  ┌───────────┐  ┌────────────┐  ┌────────────┐  │
-│  │ Test Design │  │ Test      │  │ Test Data  │  │ Publish    │  │
-│  │ Agent       │  │ Review    │  │ Agent      │  │ Jira Agent │  │
-│  └─────────────┘  └───────────┘  └────────────┘  └────────────┘  │
+├─────────────────────────────────────────────────────────────────────┤
+│              PROJECT LEVEL (per project, configurable)              │
+│                                                                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
+│  │ Project A   │  │ Project B   │  │ Project C   │  ...           │
+│  │ (PULSE)     │  │ (GXNG)      │  │ (ALPHA)     │                │
+│  │ 4-block     │  │ 3-block     │  │ 5-block     │                │
+│  │ workflow    │  │ workflow    │  │ workflow    │                │
+│  │             │  │             │  │             │                │
+│  │ Team PFPT   │  │ Team GX1    │  │ Team Core   │                │
+│  │ Team PFPM   │  │ Team GX2    │  │ Team UI     │                │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘                │
+│         │                │                │                        │
+│  ┌──────▼──────────────────────────────────▼──────┐                │
+│  │           Team Conductor Agent                  │                │
+│  │   Reads project config → runs the right workflow│                │
+│  └──────┬──────────┬──────────┬───────────────────┘                │
+│         │          │          │                                     │
+│  ┌──────▼──┐ ┌─────▼────┐ ┌──▼───────┐  (+ more per config)      │
+│  │KB Agent │ │Test      │ │Publish   │                             │
+│  │Story    │ │Design    │ │Jira      │                             │
+│  │Analysis │ │Review    │ │          │                             │
+│  └─────────┘ └──────────┘ └──────────┘                             │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
-│                    KNOWLEDGE LAYER                                   │
+│                    KNOWLEDGE LAYER (per project)                    │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                         │
+│  │ PULSE    │  │ GXNG     │  │ ALPHA    │  Project-specific       │
+│  │ knowledge│  │ knowledge│  │ knowledge│  domain knowledge       │
+│  └──────────┘  └──────────┘  └──────────┘                         │
 │  ┌───────────────────────────────────────────────────────────────┐  │
-│  │  SLM (Small Language Model) - Local RAG + Domain Knowledge    │  │
-│  │  ChromaDB Vector Store  │  Ollama LLM  │  FastAPI Server      │  │
+│  │  SLM (Small Language Model) - Local RAG + All Knowledge       │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+---
+
+## How to Onboard a New Project (Step-by-Step)
+
+### Step 1: Copy the template
+
+```bash
+# Create your project config
+cp -r .github/agents/projects/_template .github/agents/projects/<your-project-id>
+
+# Create your knowledge directory
+cp -r knowledge_base/projects/_template knowledge_base/projects/<your-project-id>
+```
+
+### Step 2: Edit your project config
+
+Open `.github/agents/projects/<your-project-id>/project-config.yaml` and fill in:
+
+```yaml
+project:
+  id: "MYPROJ"                    # Must match your Jira project key
+  name: "My Project Full Name"
+  jira_project_key: "MYPROJ"
+
+teams:
+  my_team:
+    name: "My Team"
+    domain: "MyDomain"
+    sprint_prefix: "MT"
+    lead: "john.doe"
+    environments: ["QA", "Staging"]
+
+domain_routing:
+  rules:
+    - match_sprint_prefix: "MT"
+      domain_folder: "MyDomain"
+  fallback: "ask_conductor"
+```
+
+### Step 3: Choose your workflow
+
+**Option A** — Use the org default 4-block workflow:
+
+```yaml
+story_workflow:
+  mode: "inherit"    # Uses KB → Discovery → Quality → Release
+```
+
+**Option B** — Define a custom workflow for your project:
+
+```yaml
+story_workflow:
+  mode: "custom"
+  blocks:
+    - id: "data_discovery"
+      name: "Data Discovery"
+      agents: ["story-agent", "analysis-agent"]
+      gate: "DISCOVERY_APPROVED"
+      description: "Discover schemas, DQ rules, transformation logic"
+
+    - id: "test_generation"
+      name: "Test Generation"
+      agents: ["test-planning-agent", "test-design-agent", "test-data-agent"]
+      gate: "TESTS_APPROVED"
+      description: "Generate DQ, reconciliation, and pipeline tests"
+
+    - id: "publish"
+      name: "Publish"
+      agents: ["publish-jira-agent"]
+      gate: "APPROVE_FOR_JIRA"
+      description: "Publish to Jira"
+
+  mandatory_coverage_categories: ["DataIngestion", "Transformation", "DQ", "Reconciliation"]
+```
+
+### Step 4: Register in org-config.yaml
+
+Add your project to the registry:
+
+```yaml
+project_registry:
+  MYPROJ:
+    name: "My Project Full Name"
+    config_path: ".github/agents/projects/myproj/project-config.yaml"
+    active: true
+```
+
+### Step 5: Add domain knowledge (optional but recommended)
+
+Create JSON files in `knowledge_base/projects/<your-id>/` with domain-specific knowledge:
+
+```json
+{
+  "metadata": {
+    "project": "MYPROJ",
+    "category": "domain_knowledge"
+  },
+  "entries": [
+    {
+      "id": "myproj_rule_1",
+      "text": "In MyProject, the reconciliation process requires matching on 3 keys: Account, Security, and Date.",
+      "category": "domain_knowledge",
+      "source": "architecture-doc"
+    }
+  ]
+}
+```
+
+Then reload the SLM:
+
+```bash
+python -m slm setup
+```
+
+### Step 6: Start using it
+
+```bash
+# Process a story
+@conductor-agent Process MYPROJ-1234
+
+# Sprint coordination
+@org-conductor-agent Sprint coordination for MT Sprint 1
+
+# Release readiness
+@release-readiness-agent Assess MYPROJ Release 1.0
+```
+
+---
+
+## Custom Workflow Examples
+
+### Example 1: Data Pipeline Project (3 blocks)
+
+A project focused on ETL/data pipelines doesn't need a separate "Knowledge Base" block.
+
+```yaml
+story_workflow:
+  mode: "custom"
+  blocks:
+    - id: "data_discovery"
+      name: "Data Discovery"
+      agents: ["story-agent", "analysis-agent"]
+      gate: "DISCOVERY_APPROVED"
+
+    - id: "test_generation"
+      name: "Test Generation"
+      agents: ["test-planning-agent", "test-design-agent", "test-data-agent"]
+      gate: "TESTS_APPROVED"
+
+    - id: "publish"
+      name: "Publish"
+      agents: ["publish-jira-agent"]
+      gate: "APPROVE_FOR_JIRA"
+
+  mandatory_coverage_categories: ["DataIngestion", "Transformation", "DQ", "Reconciliation"]
+```
+
+### Example 2: UI Platform Project (5 blocks)
+
+A UI-heavy project needs UX review and accessibility checks.
+
+```yaml
+story_workflow:
+  mode: "custom"
+  blocks:
+    - id: "requirements"
+      name: "Requirements"
+      agents: ["story-agent"]
+      gate: "REQUIREMENTS_APPROVED"
+
+    - id: "ux_review"
+      name: "UX Review"
+      agents: ["analysis-agent"]
+      gate: "UX_APPROVED"
+
+    - id: "test_design"
+      name: "Test Design"
+      agents: ["test-planning-agent", "test-design-agent"]
+      gate: "DESIGN_APPROVED"
+
+    - id: "test_review"
+      name: "Test Review"
+      agents: ["test-review-agent"]
+      gate: "REVIEW_APPROVED"
+
+    - id: "publish"
+      name: "Publish"
+      agents: ["publish-jira-agent"]
+      gate: "APPROVE_FOR_JIRA"
+
+  mandatory_coverage_categories: ["UI", "Accessibility", "CrossBrowser", "API"]
+```
+
+### Example 3: API-First Project (4 blocks with contract focus)
+
+A microservices project needs contract testing baked into the workflow.
+
+```yaml
+story_workflow:
+  mode: "custom"
+  blocks:
+    - id: "discovery"
+      name: "API Discovery"
+      agents: ["story-agent", "analysis-agent"]
+      gate: "DISCOVERY_APPROVED"
+
+    - id: "contract_validation"
+      name: "Contract Validation"
+      agents: ["api-contract-testing-agent"]
+      gate: "CONTRACTS_APPROVED"
+
+    - id: "test_generation"
+      name: "Test Generation"
+      agents: ["test-planning-agent", "test-design-agent", "test-review-agent"]
+      gate: "TESTS_APPROVED"
+
+    - id: "publish"
+      name: "Publish"
+      agents: ["publish-jira-agent"]
+      gate: "APPROVE_FOR_JIRA"
+
+  mandatory_coverage_categories: ["API", "Contract", "Integration", "ErrorHandling"]
+```
+
+### Example 4: Inheriting default with stricter gates
+
+Some projects just need the standard workflow but with higher quality bars:
+
+```yaml
+story_workflow:
+  mode: "inherit"
+  mandatory_coverage_categories: ["UI", "API", "Backend", "DataComparison", "Performance"]
+
+quality_gates_overrides:
+  G1_test_execution:
+    pass_rate_threshold: 99.0    # Stricter than org default 95%
+  G4_coverage:
+    requirements_coverage_threshold: 95.0   # Stricter than org default 85%
+```
+
+---
+
 ## Agent Inventory
 
-### Organization-Level Agents (NEW)
+### Organization-Level Agents (cross-project)
 
-These agents operate across teams and provide organization-wide QA capabilities:
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Organization Conductor | `org-conductor-agent.md` | Orchestrates cross-project workflows |
+| Release Readiness | `release-readiness-agent.md` | 10-gate go/no-go, uses strictest thresholds across projects |
+| Compliance & Audit | `compliance-audit-agent.md` | Org frameworks + project-specific controls |
+| Cross-Team Dependency | `cross-team-dependency-agent.md` | Intra- and cross-project dependency tracking |
+| Test Metrics | `test-metrics-agent.md` | Per-project and org-wide dashboards |
+| Regression Impact | `regression-impact-agent.md` | Cross-project service dependency analysis |
+| Defect Triage | `defect-triage-agent.md` | Auto-detects project from defect key |
+| Environment Validation | `environment-validation-agent.md` | Validates per project's environment config |
+| API Contract Testing | `api-contract-testing-agent.md` | Cross-project consumer impact analysis |
 
-| Agent | Purpose | Key Capability |
-|-------|---------|---------------|
-| **Organization Conductor** | Top-level orchestrator for cross-team workflows | Coordinates sprint, release, and defect escalation workflows |
-| **Release Readiness** | Go/no-go assessment for releases | Aggregates 10 quality gates from all agents |
-| **Compliance & Audit** | Regulatory compliance validation | SOX, SEC, OCC, GDPR compliance checks |
-| **Cross-Team Dependency** | Inter-team dependency management | Tracks blocking/soft/data/environment/contract dependencies |
-| **Test Metrics & Reporting** | Organization-wide QA dashboards | Quality Health Score, trend analysis, executive reports |
-| **Regression Impact** | Cross-team regression scope analysis | Dependency graph traversal, prioritized test suite selection |
-| **Defect Triage** | Automated defect classification and routing | Severity assessment, root cause taxonomy, duplicate detection |
-| **Environment Validation** | Pre-execution environment health checks | Service health, config validation, data readiness, security |
-| **API Contract Testing** | Cross-service API contract validation | Breaking change detection, consumer impact, compliance scoring |
+### Team-Level Agents (per project, configurable)
 
-### Team-Level Agents (existing, enhanced)
+| Agent | File | Used In |
+|-------|------|---------|
+| Team Conductor | `conductor-agent.md` | Reads project config, runs the right workflow |
+| Knowledge Base | `KnowledgeBase-agent.md` | Uses project's domain routing rules |
+| Story | `story-agent.md` | Works with any Jira project key |
+| Analysis | `analysis-agent.md` | Builds discovery context |
+| Test Planning | `test-planning-agent.md` | Selects techniques based on story |
+| Test Design | `test-design-agent.md` | Generates test cases per project's coverage reqs |
+| Test Data | `TestData-agent.md` | Generates realistic test data |
+| Test Review | `test-review-agent.md` | Reviews against project's standards |
+| Publish Jira | `publish-jira-agent.md` | Uses project's Jira field mappings |
 
-These agents handle the per-story QA workflow within a single team:
+---
 
-| Agent | Purpose | Workflow Block |
-|-------|---------|---------------|
-| **Conductor** | Team-level story workflow orchestrator | All blocks |
-| **Knowledge Base** | Collects and documents domain knowledge | Knowledge Base |
-| **Story** | Fetches and normalizes Jira story data | Knowledge Base |
-| **Analysis** | Merges story + artifacts for discovery context | Discovery |
-| **Test Planning** | Defines test strategy and techniques | Discovery |
-| **Test Design** | Generates template-compliant test cases | Quality |
-| **Test Data** | Generates realistic test data for scenarios | Quality |
-| **Test Review** | Reviews and refines test cases | Quality |
-| **Publish Jira** | Publishes approved tests to Jira/Xray | Release |
+## Configuration Hierarchy
 
-## Workflows
-
-### 1. Team Story Workflow (per story)
+Settings are resolved in this priority order:
 
 ```
-User provides storyKey
-        │
-        ▼
-[Knowledge Base Block]
-  KB Agent → Story Agent
-        │
-   KB_APPROVED (user gate)
-        │
-        ▼
-[Discovery Block]
-  Analysis Agent + Test Planning Agent
-        │
-   DISCOVERY_APPROVED (user gate)
-        │
-        ▼
-[Quality Block]
-  Test Design Agent → Test Data Agent → Test Review Agent
-        │
-   QUALITY_APPROVED (user gate)
-        │
-        ▼
-[Release Block]
-  Publish Jira Agent
-        │
-   APPROVE_FOR_JIRA (user gate)
-        │
-        ▼
-  Tests published to Jira/Xray
+1. Project config (highest priority)
+   └── .github/agents/projects/<id>/project-config.yaml
+
+2. Organization defaults (fallback)
+   └── .github/agents/org-config.yaml → defaults
+
+3. Agent built-in defaults (last resort)
+   └── Only for truly universal behavior
 ```
 
-### 2. Sprint Coordination (organization level)
+**For cross-project operations**, the strictest value wins. If Project A requires 95% pass rate and Project B requires 98%, a release containing both uses 98%.
 
-```
-Sprint Start
-     │
-     ▼
-Cross-Team Dependency Agent → Identify dependencies & conflicts
-     │
-     ▼
-Environment Validation Agent → Validate all team environments
-     │
-     ▼
-Team Conductors execute story workflows (parallel)
-     │
-     ▼
-Regression Impact Agent → Cross-team regression scope
-     │
-     ▼
-Test Metrics Agent → Sprint dashboard & quality scores
-     │
-     ▼
-Release Readiness Agent → Sprint go/no-go
-```
+---
 
-### 3. Release Workflow (organization level)
+## Organization Workflows
 
-```
-Release Planning
-     │
-     ▼
-Cross-Team Dependency Agent → Full release dependency scan
-     │
-     ▼
-API Contract Testing Agent → Validate all modified service contracts
-     │
-     ▼
-Compliance & Audit Agent → Regulatory compliance verification
-     │
-     ▼
-Regression Impact Agent → Full release regression scope
-     │
-     ▼
-Test Metrics Agent → Release quality report
-     │
-     ▼
-Release Readiness Agent → Final GO / NO_GO / CONDITIONAL_GO
-     │
-     ├── GO → Proceed to production deployment
-     ├── CONDITIONAL_GO → Proceed with monitoring plan
-     └── NO_GO → Block and resolve blockers
-```
-
-### 4. Defect Escalation (triggered by S1/S2 defect)
-
-```
-S1/S2 Defect Reported
-     │
-     ▼
-Defect Triage Agent → Classify, assess severity, route to team
-     │
-     ▼
-Regression Impact Agent → What else might be affected?
-     │
-     ▼
-Cross-Team Dependency Agent → Which teams need notification?
-     │
-     ▼
-Release Readiness Agent → Update go/no-go assessment
-```
-
-## Quality Gates
-
-The Release Readiness Agent evaluates 10 mandatory gates:
-
-| Gate | Criteria | Threshold |
-|------|----------|-----------|
-| G1: Test Execution | All tests executed | Pass rate ≥ 95% |
-| G2: Critical Defects | No blockers | Zero open S1, S2 have workarounds |
-| G3: Regression | P1 suites complete | All passed |
-| G4: Coverage | Requirements mapped | ≥ 85%, all categories covered |
-| G5: API Contracts | No breaking changes | All compatible |
-| G6: Compliance | Regulatory checks | No CRITICAL findings |
-| G7: Dependencies | Team coordination | No blocked dependencies |
-| G8: Environment | Production-ready | Validated and healthy |
-| G9: Rollback | Safety net | Documented and tested |
-| G10: Sign-off | Team leads | All signed off |
-
-## Configuration
-
-Organization-wide settings are in `.github/agents/org-config.yaml`:
-
-- Team registry and domain mapping
-- Service registry with dependencies
-- Quality gate thresholds
-- Severity matrix and SLAs
-- Defect root cause taxonomy
-- API standards
-- Compliance frameworks
-- Agent pipeline definitions
-
-## Quick Start
-
-### For a Single Story (Team Level)
-
-Invoke the **Conductor Agent** with a Jira story key:
-
-```
-@conductor-agent Process PULSE-3730
-```
-
-The conductor will guide you through all 4 blocks with approval gates.
-
-### For Sprint Coordination (Organization Level)
-
-Invoke the **Organization Conductor**:
+### 1. Sprint Coordination
 
 ```
 @org-conductor-agent Sprint coordination for PFPT Sprint 24
+@org-conductor-agent Sprint coordination for [PFPT Sprint 24, GX Sprint 12]
 ```
 
-### For Release Readiness
+Resolves participating projects → runs dependency analysis → validates environments → team conductors execute in parallel → regression → metrics → readiness.
+
+### 2. Release QA
 
 ```
-@release-readiness-agent Assess PFPM Release 3.2 targeting 2026-09-15
+@org-conductor-agent Release QA for PFPM Release 3.2
+@org-conductor-agent Release QA for Q3 2026 Release [PULSE, GXNG, ALPHA]
 ```
 
-### For Defect Triage
+Cross-project dependency scan → API contract validation → compliance audit → regression → metrics → go/no-go.
+
+### 3. Defect Escalation
 
 ```
-@defect-triage-agent Triage PULSE-4521
+@org-conductor-agent Defect escalation for PULSE-4521
+@org-conductor-agent Defect escalation for GXNG-892
 ```
 
-### For Compliance Audit
+Auto-detects project → triage → cross-project impact → notification → release impact.
+
+### 4. Quality Assessment
 
 ```
-@compliance-audit-agent Regulatory audit for PFPM Release 3.2
+@org-conductor-agent Quality assessment for all projects
+@org-conductor-agent Quality assessment for PULSE project
 ```
 
-### For Cross-Team Dependencies
+Per-project and aggregated metrics → compliance → environment health → risk summary.
 
-```
-@cross-team-dependency-agent Analyze dependencies for PFPT Sprint 24
-```
+---
 
-## SLM (Small Language Model)
+## Quality Gates
 
-The knowledge layer provides domain-grounded answers without cloud API keys:
+10 mandatory gates evaluated by the Release Readiness Agent:
 
-```bash
-# Setup
-pip install -r requirements.txt
-ollama pull phi3:mini
-python -m slm setup
+| Gate | Threshold (org default) | Can override per project? |
+|------|------------------------|--------------------------|
+| G1: Test Execution | Pass rate ≥ 95% | Yes (stricter only) |
+| G2: Critical Defects | Zero open S1 | No (org minimum) |
+| G3: Regression | All P1 suites passed | No (org minimum) |
+| G4: Coverage | ≥ 85% requirements | Yes (stricter only) |
+| G5: API Contracts | No breaking changes | No (org minimum) |
+| G6: Compliance | No CRITICAL findings | No (org minimum) |
+| G7: Dependencies | No blocked deps | No (org minimum) |
+| G8: Environment | Prod-like validated | No (org minimum) |
+| G9: Rollback | Documented + tested | No (org minimum) |
+| G10: Sign-off | All leads signed | No (org minimum) |
 
-# Ask questions
-python -m slm ask "What testing techniques for data pipeline DQ rules?"
-
-# Search knowledge
-python -m slm search "boundary value analysis"
-
-# Start API server
-python -m slm serve
-```
-
-See the `slm/` directory for full documentation.
-
-## Anti-Hallucination Guardrails
-
-Every agent in this suite includes strict anti-hallucination rules:
-
-1. **No fabricated data** — Every fact must trace to a real source (Jira, artifacts, API responses)
-2. **No invented identifiers** — Story keys, defect keys, team names, service names must come from actual systems
-3. **No assumed status** — Every status (green/red/amber) must be backed by verified checks
-4. **No inflated metrics** — Numbers come from data sources, not estimates
-5. **No silent failures** — Errors are reported, never hidden or ignored
-6. **Mandatory source attribution** — Every claim links to its source
-7. **Explicit uncertainty** — Assumptions are labeled as assumptions, not presented as facts
+---
 
 ## File Structure
 
 ```
-.github/
-  agents/
-    # Team-level agents (story workflow)
-    conductor-agent.md          # Team story workflow orchestrator
-    KnowledgeBase-agent.md      # Knowledge collection from Jira/Confluence
-    story-agent.md              # Jira story fetching and normalization
-    analysis-agent.md           # Discovery context builder
-    test-planning-agent.md      # Test strategy and technique selection
-    test-design-agent.md        # Test case generation
-    TestData-agent.md           # Test data generation
-    test-review-agent.md        # Test case review and refinement
-    publish-jira-agent.md       # Jira/Xray publishing
+.github/agents/
+  # Organization config
+  org-config.yaml                   # Org defaults, project registry, pipeline definitions
 
-    # Organization-level agents (cross-team)
-    org-conductor-agent.md      # Organization workflow orchestrator
-    release-readiness-agent.md  # Go/no-go assessment
-    compliance-audit-agent.md   # Regulatory compliance validation
-    cross-team-dependency-agent.md  # Inter-team dependency tracking
-    test-metrics-agent.md       # Organization-wide metrics & dashboards
-    regression-impact-agent.md  # Cross-team regression analysis
-    defect-triage-agent.md      # Defect classification and routing
-    environment-validation-agent.md  # Environment health validation
-    api-contract-testing-agent.md    # API contract validation
+  # Per-project configs
+  projects/
+    _template/
+      project-config.yaml           # Template — copy this for new projects
+    pulse/
+      project-config.yaml           # PULSE project configuration
+    # gxng/
+    #   project-config.yaml         # Add more projects here
+    # alpha/
+    #   project-config.yaml
 
-    # Configuration
-    org-config.yaml             # Organization-wide settings
+  # Team-level agents
+  conductor-agent.md                # Project-aware team workflow orchestrator
+  KnowledgeBase-agent.md
+  story-agent.md
+  analysis-agent.md
+  test-planning-agent.md
+  test-design-agent.md
+  TestData-agent.md
+  test-review-agent.md
+  publish-jira-agent.md
 
-knowledge_base/                 # Domain knowledge for SLM
-slm/                           # Small Language Model (local RAG)
-requirements.txt               # Python dependencies
+  # Organization-level agents
+  org-conductor-agent.md            # Cross-project orchestrator
+  release-readiness-agent.md
+  compliance-audit-agent.md
+  cross-team-dependency-agent.md
+  test-metrics-agent.md
+  regression-impact-agent.md
+  defect-triage-agent.md
+  environment-validation-agent.md
+  api-contract-testing-agent.md
+
+knowledge_base/
+  projects/
+    _template/                      # Template for project knowledge
+      domain_knowledge.json
+    pulse/                          # PULSE-specific domain knowledge
+      qa_testing.json
+      qa_automation.json
+      private_markets_domain.json
+      jira_xray.json
+
+slm/                               # Small Language Model (local RAG)
+requirements.txt                    # Python dependencies
 ```
 
-## Teams & Domains
+---
 
-| Team | Domain Folder | Sprint Prefix | Focus Area |
-|------|--------------|---------------|------------|
-| PFPT | `FOF/` | PFPT | Private Fund Processing Technology |
-| PFPM | `Private_Markets/` | PFPM | Private Markets Investment Operations |
+## Anti-Hallucination Guardrails
 
-## Contributing
+Every agent includes strict rules:
 
-When adding new agents or modifying existing ones:
-
-1. Follow the existing agent template format (YAML frontmatter + markdown body)
-2. Include anti-hallucination rules specific to the agent's domain
-3. Define strict input validation
-4. Define strict output JSON schema
-5. Document handoff to downstream agents
-6. Update `org-config.yaml` if the agent participates in a pipeline
-7. Test with real Jira stories before merging
+1. **No fabricated data** — facts trace to real sources
+2. **No invented identifiers** — keys come from actual systems
+3. **No assumed status** — verified by checks, not guessed
+4. **No inflated metrics** — numbers from data sources only
+5. **No silent failures** — errors reported, never hidden
+6. **Mandatory source attribution** — every claim cites its source
+7. **No hardcoded project values** — always read from project config

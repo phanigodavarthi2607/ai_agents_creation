@@ -1,0 +1,185 @@
+# ============================================================
+# PROJECT CONFIGURATION: PULSE - Investment Operations
+# ============================================================
+# This file defines project-specific settings for the PULSE project.
+# It overrides org-level defaults where needed.
+#
+# Location: .github/agents/projects/pulse/project-config.yaml
+# Referenced by: org-config.yaml -> project_registry -> PULSE
+# ============================================================
+
+project:
+  id: "PULSE"
+  name: "PULSE - Investment Operations"
+  description: "Private fund processing, private markets investment operations, and fund-of-funds management"
+  jira_project_key: "PULSE"
+  confluence_space: "PULSE"
+  active: true
+
+# ─────────────────────────────────────────────────────────
+# TEAMS within this project
+# ─────────────────────────────────────────────────────────
+teams:
+  pfpt:
+    name: "Private Fund Processing Technology"
+    domain: "FOF"
+    sprint_prefix: "PFPT"
+    lead: ""
+    environments: ["QA", "QA2", "Staging"]
+    jira_board: ""
+    slack_channel: ""
+
+  pfpm:
+    name: "Private Markets"
+    domain: "Private_Markets"
+    sprint_prefix: "PFPM"
+    lead: ""
+    environments: ["QA", "Staging", "UAT"]
+    jira_board: ""
+    slack_channel: ""
+
+# ─────────────────────────────────────────────────────────
+# DOMAIN CONFIGURATION
+# Maps sprint prefixes to domain folders for knowledge base routing.
+# The Knowledge Base Agent uses this to determine where to store output.
+# ─────────────────────────────────────────────────────────
+domain_routing:
+  rules:
+    - match_sprint_prefix: "PFPT"
+      domain_folder: "FOF"
+    - match_sprint_prefix: "PFPM"
+      domain_folder: "Private_Markets"
+  fallback: "ask_conductor"
+
+# ─────────────────────────────────────────────────────────
+# SERVICE REGISTRY for this project
+# ─────────────────────────────────────────────────────────
+service_registry:
+  # Add your services here as they are onboarded:
+  # my-api-service:
+  #   team: pfpt
+  #   type: api
+  #   dependencies: [other-service]
+  #   health_endpoint: /health
+  #   api_contract: "path/to/openapi.yaml"
+
+# ─────────────────────────────────────────────────────────
+# WORKFLOW CONFIGURATION
+# Override the org default_story_workflow if this project needs
+# different blocks, different gates, or different agents.
+# ─────────────────────────────────────────────────────────
+story_workflow:
+  # "inherit" means use the org default_story_workflow as-is.
+  # Set to "custom" and define blocks below to override.
+  mode: "inherit"
+
+  # If mode is "custom", define your blocks:
+  # blocks:
+  #   - id: "requirements"
+  #     name: "Requirements Gathering"
+  #     agents: ["story-agent"]
+  #     gate: "REQUIREMENTS_APPROVED"
+  #     description: "Gather and validate requirements"
+  #
+  #   - id: "design"
+  #     name: "Test Design"
+  #     agents: ["test-design-agent"]
+  #     gate: "DESIGN_APPROVED"
+  #     description: "Design test cases"
+  #
+  #   - id: "execution"
+  #     name: "Test Execution"
+  #     agents: ["test-execution-agent"]
+  #     gate: "EXECUTION_APPROVED"
+  #     description: "Execute and validate"
+
+  # Mandatory coverage categories for this project.
+  # Inherits from org defaults if not specified.
+  mandatory_coverage_categories: ["UI", "API", "Backend", "DataComparison"]
+
+# ─────────────────────────────────────────────────────────
+# QUALITY GATES (project-level overrides)
+# Only specify gates you want to make STRICTER than org defaults.
+# You cannot weaken org defaults — org minimums always apply.
+# ─────────────────────────────────────────────────────────
+quality_gates_overrides:
+  G1_test_execution:
+    pass_rate_threshold: 96.0
+  G4_coverage:
+    requirements_coverage_threshold: 90.0
+
+# ─────────────────────────────────────────────────────────
+# COMPLIANCE (project-level additions)
+# The org-level compliance frameworks always apply.
+# Add project-specific compliance requirements here.
+# ─────────────────────────────────────────────────────────
+compliance:
+  additional_controls:
+    financial_dual_verification: true
+    irr_calculation_reconciliation: true
+    cross_system_data_reconciliation: true
+  audit_frequency: "quarterly"
+
+# ─────────────────────────────────────────────────────────
+# JIRA FIELD MAPPINGS
+# Project-specific Jira custom field IDs.
+# Different projects may have different custom fields.
+# ─────────────────────────────────────────────────────────
+jira_field_mappings:
+  testing_type_field: "customfield_10302"
+  test_case_id_field: "__xray_testId"
+  test_type_field: "xray_testtype"
+  csv_format: "PULSE-3336"
+  link_type: "is tested by"
+
+# ─────────────────────────────────────────────────────────
+# TESTING TYPE NORMALIZATION
+# Map project-specific test type labels to Jira's fixed values.
+# ─────────────────────────────────────────────────────────
+testing_type_mapping:
+  "Functional": "Functional"
+  "Data Validation": "Functional"
+  "Filtering": "Functional"
+  "Configuration": "Functional"
+  "Metadata": "Functional"
+  "Parametrization": "Functional"
+  "Execution": "Functional"
+  "Audit & Logging": "Functional"
+  "Performance": "Non Functional"
+  "Load Testing": "Non Functional"
+  "Stress Testing": "Non Functional"
+  "Regression": "Regression"
+  "End to End": "End to End"
+  "Integration": "End to End"
+  "Negative": "Negative"
+  "Error Handling": "Negative"
+  "Input Validation": "Functional"
+  "Boundary": "Functional"
+  _default: "Functional"
+
+# ─────────────────────────────────────────────────────────
+# DOMAIN KNOWLEDGE
+# Path to project-specific knowledge files loaded into the SLM.
+# ─────────────────────────────────────────────────────────
+knowledge:
+  base_path: "knowledge_base/projects/pulse"
+  categories:
+    - id: "qa_testing"
+      source: "slm/knowledge/qa_testing.json"
+    - id: "qa_automation"
+      source: "slm/knowledge/qa_automation.json"
+    - id: "private_markets"
+      source: "slm/knowledge/private_markets_domain.json"
+    - id: "jira_xray"
+      source: "slm/knowledge/jira_xray.json"
+
+# ─────────────────────────────────────────────────────────
+# KNOWN ISSUES & WORKAROUNDS
+# Document project-specific bugs/workarounds agents should know about.
+# ─────────────────────────────────────────────────────────
+known_issues:
+  - id: "SUBTASK_404"
+    description: "Direct API reads of Jira sub-tasks sometimes return HTTP 404"
+    workaround: "Extract sub-task metadata from parent issue's fields.subtasks array"
+    affected_keys_example: ["PULSE-3892", "PULSE-3740"]
+    severity: "non-blocking"

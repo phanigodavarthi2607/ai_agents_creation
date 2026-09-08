@@ -1,0 +1,229 @@
+# ============================================================
+# PROJECT CONFIGURATION TEMPLATE
+# ============================================================
+# Copy this entire directory to register a new project:
+#
+#   cp -r .github/agents/projects/_template .github/agents/projects/<your-project-id>
+#   cp -r knowledge_base/projects/_template knowledge_base/projects/<your-project-id>
+#
+# Then edit your copy of project-config.yaml, filling in every section.
+# Finally, register the project in org-config.yaml under project_registry.
+#
+# ============================================================
+# STEP-BY-STEP ONBOARDING:
+#
+# 1. Copy this template folder
+# 2. Fill in project/teams/services/workflows below
+# 3. Add domain knowledge files under knowledge_base/projects/<id>/
+# 4. Register in org-config.yaml:
+#      project_registry:
+#        YOUR_KEY:
+#          name: "Your Project Name"
+#          config_path: ".github/agents/projects/<your-id>/project-config.yaml"
+#          active: true
+# 5. Run: python -m slm setup  (to reload knowledge)
+# 6. Test: @conductor-agent Process YOUR_KEY-1234
+# ============================================================
+
+project:
+  id: "YOUR_PROJECT_KEY"          # Must match Jira project key prefix
+  name: "Your Project Full Name"
+  description: "One-line description of what this project does"
+  jira_project_key: "YOUR_KEY"    # Jira project key (used to auto-detect project from story keys)
+  confluence_space: ""             # Confluence space key (optional)
+  active: true
+
+# ─────────────────────────────────────────────────────────
+# TEAMS
+# List every team that participates in QA for this project.
+# ─────────────────────────────────────────────────────────
+teams:
+  team_one:
+    name: "Team One Full Name"
+    domain: "DomainA"             # Domain folder name for knowledge base
+    sprint_prefix: "T1"           # Sprint name prefix used in Jira
+    lead: "first.last"            # Team lead (used for sign-off gate)
+    environments: ["QA", "Staging"]
+    jira_board: ""                # Jira board URL (optional)
+    slack_channel: ""             # Slack channel for notifications (optional)
+
+  # team_two:
+  #   name: "Team Two Full Name"
+  #   domain: "DomainB"
+  #   sprint_prefix: "T2"
+  #   lead: "first.last"
+  #   environments: ["QA", "UAT"]
+
+# ─────────────────────────────────────────────────────────
+# DOMAIN ROUTING
+# How the Knowledge Base Agent determines the domain folder.
+# Match rules are evaluated in order; first match wins.
+# ─────────────────────────────────────────────────────────
+domain_routing:
+  rules:
+    - match_sprint_prefix: "T1"
+      domain_folder: "DomainA"
+    # - match_sprint_prefix: "T2"
+    #   domain_folder: "DomainB"
+    # - match_label: "platform"
+    #   domain_folder: "Platform"
+  fallback: "ask_conductor"       # What to do if no rule matches
+
+# ─────────────────────────────────────────────────────────
+# SERVICE REGISTRY
+# Register the services this project owns or depends on.
+# Used by Regression Impact Agent and Cross-Team Dependency Agent.
+# ─────────────────────────────────────────────────────────
+service_registry:
+  # example-api:
+  #   team: team_one
+  #   type: api                   # api | backend | data-pipeline | ui | batch
+  #   dependencies: [auth-service, data-store]
+  #   health_endpoint: /health
+  #   api_contract: "docs/openapi/example-api.yaml"
+
+# ─────────────────────────────────────────────────────────
+# WORKFLOW CONFIGURATION
+# ─────────────────────────────────────────────────────────
+#
+# mode: "inherit"  → Use the org default 4-block workflow
+# mode: "custom"   → Define your own blocks below
+#
+# The custom workflow lets you:
+#   - Add/remove/reorder blocks
+#   - Use different gate names
+#   - Use different agents per block
+#   - Change mandatory coverage categories
+#
+# ─────────────────────────────────────────────────────────
+story_workflow:
+  mode: "inherit"
+
+  # ── UNCOMMENT AND EDIT FOR CUSTOM WORKFLOW ──
+  #
+  # mode: "custom"
+  # blocks:
+  #
+  #   # Example: a 3-block workflow for a data pipeline project
+  #   - id: "data_discovery"
+  #     name: "Data Discovery"
+  #     agents: ["story-agent", "analysis-agent"]
+  #     gate: "DISCOVERY_APPROVED"
+  #     description: "Discover source/target schemas, transformation rules, DQ requirements"
+  #
+  #   - id: "test_generation"
+  #     name: "Test Generation"
+  #     agents: ["test-planning-agent", "test-design-agent", "test-data-agent"]
+  #     gate: "TESTS_APPROVED"
+  #     description: "Generate DQ, reconciliation, and transformation test cases"
+  #
+  #   - id: "publish"
+  #     name: "Publish"
+  #     agents: ["publish-jira-agent"]
+  #     gate: "APPROVE_FOR_JIRA"
+  #     description: "Publish approved tests to Jira"
+  #
+  # mandatory_coverage_categories: ["DataIngestion", "Transformation", "DQ", "Reconciliation"]
+
+  # ── ANOTHER EXAMPLE: 5-block workflow for a UI-heavy project ──
+  #
+  # mode: "custom"
+  # blocks:
+  #   - id: "requirements"
+  #     name: "Requirements"
+  #     agents: ["story-agent"]
+  #     gate: "REQUIREMENTS_APPROVED"
+  #     description: "Fetch and validate requirements and mockups"
+  #
+  #   - id: "ux_review"
+  #     name: "UX Review"
+  #     agents: ["analysis-agent"]
+  #     gate: "UX_APPROVED"
+  #     description: "Verify UX flows match design system standards"
+  #
+  #   - id: "test_design"
+  #     name: "Test Design"
+  #     agents: ["test-planning-agent", "test-design-agent"]
+  #     gate: "DESIGN_APPROVED"
+  #     description: "Design functional, accessibility, and cross-browser tests"
+  #
+  #   - id: "test_review"
+  #     name: "Test Review"
+  #     agents: ["test-review-agent"]
+  #     gate: "REVIEW_APPROVED"
+  #     description: "Review and refine test cases"
+  #
+  #   - id: "publish"
+  #     name: "Publish"
+  #     agents: ["publish-jira-agent"]
+  #     gate: "APPROVE_FOR_JIRA"
+  #     description: "Publish to Jira"
+  #
+  # mandatory_coverage_categories: ["UI", "Accessibility", "CrossBrowser", "API"]
+
+# ─────────────────────────────────────────────────────────
+# QUALITY GATES (project-level overrides)
+# Only list gates you want to make STRICTER than org defaults.
+# Org minimums always apply — you cannot weaken them.
+# ─────────────────────────────────────────────────────────
+quality_gates_overrides: {}
+  # Example:
+  # G1_test_execution:
+  #   pass_rate_threshold: 98.0
+  # G4_coverage:
+  #   requirements_coverage_threshold: 95.0
+
+# ─────────────────────────────────────────────────────────
+# COMPLIANCE (project-level additions)
+# Org-level frameworks always apply. Add extras here.
+# ─────────────────────────────────────────────────────────
+compliance:
+  additional_controls: {}
+    # financial_dual_verification: true
+    # hipaa_phi_protection: true
+    # pci_cardholder_data: true
+  audit_frequency: "quarterly"    # quarterly | monthly | per-release
+
+# ─────────────────────────────────────────────────────────
+# JIRA FIELD MAPPINGS
+# Map your project's custom fields. These vary across Jira projects.
+# ─────────────────────────────────────────────────────────
+jira_field_mappings:
+  testing_type_field: ""          # e.g., "customfield_10302"
+  test_case_id_field: ""          # e.g., "__xray_testId"
+  test_type_field: ""             # e.g., "xray_testtype"
+  csv_format: ""                  # e.g., "PULSE-3336" (your CSV template name)
+  link_type: "is tested by"      # Jira link type for story-to-test linking
+
+# ─────────────────────────────────────────────────────────
+# TESTING TYPE NORMALIZATION
+# Map your project's test type labels to Jira's 5 fixed values.
+# ─────────────────────────────────────────────────────────
+testing_type_mapping:
+  "Functional": "Functional"
+  "Regression": "Regression"
+  "End to End": "End to End"
+  "Negative": "Negative"
+  _default: "Functional"          # Fallback for unmapped values
+
+# ─────────────────────────────────────────────────────────
+# DOMAIN KNOWLEDGE
+# Path to project-specific knowledge files for the SLM.
+# Add JSON files with domain knowledge under your project's
+# knowledge_base/projects/<id>/ directory.
+# ─────────────────────────────────────────────────────────
+knowledge:
+  base_path: "knowledge_base/projects/_template"
+  categories: []
+    # - id: "my_domain"
+    #   source: "knowledge_base/projects/<your-id>/my_domain.json"
+
+# ─────────────────────────────────────────────────────────
+# KNOWN ISSUES & WORKAROUNDS
+# Document project-specific bugs/workarounds agents should know about.
+# ─────────────────────────────────────────────────────────
+known_issues: []
+  # - id: "ISSUE_001"
+  #   description: "Description of the known issue"
+  #   workaround: "How to work around it"
+  #   severity: "blocking|non-blocking"

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "qa_method_001",
+    "text": "Boundary Value Analysis (BVA) tests values at the edges of input ranges: exact minimum, minimum minus 1, exact maximum, maximum plus 1, and nominal value. BVA is most effective when inputs have clearly defined numeric or date ranges. Apply BVA when acceptance criteria specify min/max constraints.",
+    "category": "qa_methodology",
+    "tags": ["bva", "boundary", "testing-technique"]
+  },
+  {
+    "id": "qa_method_002",
+    "text": "Equivalence Class Partitioning (ECP) divides input data into valid and invalid partitions. One test case per partition is sufficient because all values in a partition are expected to behave identically. Combine ECP with BVA for comprehensive input coverage.",
+    "category": "qa_methodology",
+    "tags": ["ecp", "equivalence", "testing-technique"]
+  },
+  {
+    "id": "qa_method_003",
+    "text": "Decision Table Testing maps combinations of conditions to expected actions. Use when business logic involves multiple conditions with different outcomes. Each column represents a unique rule. Collapse duplicate outcomes to reduce test count. Most effective for complex business rules with 2-6 conditions.",
+    "category": "qa_methodology",
+    "tags": ["decision-table", "testing-technique", "business-rules"]
+  },
+  {
+    "id": "qa_method_004",
+    "text": "Negative Testing verifies the system handles invalid inputs, unexpected conditions, and error paths gracefully. Test types include: invalid data types, out-of-range values, null/empty inputs, special characters, SQL injection attempts, oversized payloads, missing required fields, and unauthorized access attempts.",
+    "category": "qa_methodology",
+    "tags": ["negative", "testing-technique", "error-handling"]
+  },
+  {
+    "id": "qa_method_005",
+    "text": "Integration Testing verifies that different modules or services work together correctly. Types include: Big Bang (all at once), Top-Down (stubs for lower modules), Bottom-Up (drivers for upper modules), and Sandwich/Hybrid. For API-driven systems, focus on contract testing, data flow validation, and error propagation between services.",
+    "category": "qa_methodology",
+    "tags": ["integration", "testing-technique", "api"]
+  },
+  {
+    "id": "qa_method_006",
+    "text": "Regression Testing ensures that new changes do not break existing functionality. Regression scope should include: critical path scenarios, recently modified features, features with high defect history, integration points affected by the change, and data flow paths that cross the modified component.",
+    "category": "qa_methodology",
+    "tags": ["regression", "testing-technique"]
+  },
+  {
+    "id": "qa_method_007",
+    "text": "End-to-End Testing validates the complete workflow from start to finish, simulating real user scenarios. E2E tests should cover: user journey through the application, data flow across all system layers (UI -> API -> Backend -> Database), third-party integrations, and business process completion. E2E tests are expensive — focus on critical business paths.",
+    "category": "qa_methodology",
+    "tags": ["e2e", "end-to-end", "testing-technique"]
+  },
+  {
+    "id": "qa_method_008",
+    "text": "Data Quality (DQ) Testing validates data accuracy, completeness, consistency, and timeliness across data pipelines. Key checks: source-to-target field mapping validation, record count reconciliation, null/empty field detection, referential integrity, duplicate detection, format validation, threshold and bounds checking, and business rule compliance.",
+    "category": "qa_methodology",
+    "tags": ["data-quality", "dq", "testing-technique", "data-pipeline"]
+  },
+  {
+    "id": "qa_practice_001",
+    "text": "Test Case Design Best Practices: Each test case must be independently executable. Include explicit Pre-Requisites (environment, user role, data state, starting page). Every step must have its own Expected Result — do not combine multiple validations into one step. The Final Expected Result states the overall business outcome. Avoid vague language like 'system works correctly' — expected results must be measurable and verifiable.",
+    "category": "qa_best_practice",
+    "tags": ["test-case", "best-practice", "template"]
+  },
+  {
+    "id": "qa_practice_002",
+    "text": "Test Coverage Matrix: For comprehensive testing, ensure coverage across four dimensions: UI (user interface interactions, form validation, navigation), API (endpoint behavior, request/response validation, status codes), Backend (business logic, data processing, calculations), DataComparison (source-to-target validation, reconciliation, data integrity). Each dimension should have positive, negative, and boundary test cases.",
+    "category": "qa_best_practice",
+    "tags": ["coverage", "matrix", "best-practice"]
+  },
+  {
+    "id": "qa_practice_003",
+    "text": "Acceptance Criteria Traceability: Every test case must trace back to at least one acceptance criterion (AC). Maintain a traceability matrix mapping AC items to test case IDs. If an AC has no corresponding test case, flag it as a coverage gap. If a test case has no corresponding AC, justify its existence (e.g., extended negative testing, regression coverage).",
+    "category": "qa_best_practice",
+    "tags": ["traceability", "acceptance-criteria", "best-practice"]
+  },
+  {
+    "id": "qa_practice_004",
+    "text": "Test Data Management: Use realistic but synthetic data for testing. Never use production data in test environments. For boundary testing, use exact boundary values (min, max, min-1, max+1). For date fields, use ISO 8601 format. For identifiers, use recognizable test prefixes. Keep test data sets small and scenario-focused. Each scenario should have its own isolated data set.",
+    "category": "qa_best_practice",
+    "tags": ["test-data", "best-practice", "data-management"]
+  },
+  {
+    "id": "qa_practice_005",
+    "text": "Defect Prevention: Common hallucination-prone areas in test documentation: inventing UI element names not in specs, assuming navigation paths, fabricating API endpoint URLs, guessing database column names, inventing error messages. Always verify against the actual specification. If information is not available, flag it as an open question — never guess.",
+    "category": "qa_best_practice",
+    "tags": ["defect-prevention", "anti-hallucination", "best-practice"]
+  },
+  {
+    "id": "qa_practice_006",
+    "text": "Test Prioritization: Use risk-based prioritization. Factors: business impact (Critical > High > Medium > Low), likelihood of failure, complexity of the feature, frequency of use, regulatory requirements, and recent change history. Critical path tests run first. Regression suite ordered by risk score.",
+    "category": "qa_best_practice",
+    "tags": ["prioritization", "risk-based", "best-practice"]
+  }
+]
