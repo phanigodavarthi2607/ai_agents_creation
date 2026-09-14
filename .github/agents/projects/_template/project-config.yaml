@@ -220,6 +220,19 @@ automation:
   patterns: []                    # e.g., ["PageObjectModel", "fixtures"]
   locator_strategy: ""            # e.g., "data-testid", "aria-label", "css"
   # minimum_automation_rate: 60.0 # Override org default if needed (stricter only)
+  #
+  # ── PLAYWRIGHT QUICKSTART ──
+  # If using Playwright + TypeScript, set:
+  #   framework: "Playwright"
+  #   language: "TypeScript"
+  #   patterns: ["PageObjectModel", "fixtures"]
+  #   locator_strategy: "data-testid"
+  # Then the Automation Agent will use the Playwright Automation skill
+  # (.github/agents/skills/playwright-automation.md) to generate:
+  #   - UI tests with Page Object Model
+  #   - API tests with BaseApiClient
+  #   - Data comparison tests with DataComparisonEngine
+  # See Section 10 of the skill file for cross-team adoption steps.
 
 # ─────────────────────────────────────────────────────────
 # SECURITY CONFIGURATION

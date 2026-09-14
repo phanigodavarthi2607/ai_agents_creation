@@ -409,7 +409,10 @@ Scans code, dependencies, secrets, and OWASP compliance. CRITICAL findings block
 @automation-agent Automation report for all projects
 ```
 
-Analyzes test cases for automation ROI, generates scripts in the project's framework, and tracks automation health.
+Analyzes test cases for automation ROI, generates scripts in the project's framework, and tracks automation health. For Playwright + TypeScript projects, uses the **Playwright Automation Skill** to generate production-ready code with:
+- **UI tests** — Page Object Model, auto-wait, semantic locators
+- **API tests** — BaseApiClient, schema validation, auth handling
+- **Data comparison tests** — DataComparisonEngine, field mappings, aggregation reconciliation
 
 ### 5. Defect Escalation
 
@@ -491,6 +494,10 @@ Per-project and aggregated metrics → compliance → environment health → ris
   defect-triage-agent.md
   environment-validation-agent.md
   api-contract-testing-agent.md
+
+  # Skills (detailed code generation blueprints used by agents)
+  skills/
+    playwright-automation.md        # Playwright UI + API + Data Comparison skill
 
 knowledge_base/
   projects/

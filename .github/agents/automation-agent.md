@@ -275,6 +275,18 @@ Organization-wide automation metrics:
 | Release Readiness Agent | Automation pass rate contributes to G1 (Test Execution) gate |
 | CI/CD Pipeline | Configures triggers, parallelization, reporting |
 
+## Skills
+
+This agent uses specialized skill files for script generation:
+
+| Skill | Path | Scope |
+|-------|------|-------|
+| **Playwright Automation** | `.github/agents/skills/playwright-automation.md` | UI tests, API tests, Data Comparison tests using Playwright + TypeScript |
+
+When `mode: generate` is invoked and the project's `automation.framework` is "Playwright" with `automation.language` "TypeScript", load the Playwright Automation skill file for detailed code generation templates, base classes, patterns, and anti-hallucination rules.
+
+If the project uses a different framework, report: "No skill file available for <framework> + <language>. Generating with best-effort patterns."
+
 ## Handoff
 
 - **analyze** → Send candidacy report to team lead for prioritization
