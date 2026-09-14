@@ -337,8 +337,7 @@ This elevation is automatic for projects with `security.classification: "restric
 
 | Agent | Integration |
 |-------|------------|
-| Compliance & Audit Agent | Security findings feed into regulatory compliance (SOX, PCI) |
-| Release Readiness Agent | CRITICAL/HIGH security findings block release (contributes to G6 gate) |
+| Release Readiness Agent | CRITICAL/HIGH security findings block release (contributes to quality gates) |
 | API Contract Testing Agent | API security posture (auth, rate limiting, injection) |
 | Environment Validation Agent | Environment security checks (isolation, credentials, TLS) |
 | Regression Impact Agent | Security patches trigger targeted security regression |
@@ -351,6 +350,6 @@ This elevation is automatic for projects with `security.classification: "restric
 - **CRITICAL vulnerabilities** → Immediate escalation to Security Operations + Release Readiness Agent (blocks release)
 - **HIGH vulnerabilities** → Assigned to development team via Defect Triage Agent with sprint deadline
 - **Secrets findings** → Immediate rotation request to Infrastructure team
-- **OWASP report** → Compliance & Audit Agent for regulatory tracking
+- **OWASP report** → QA leadership and CISO office for regulatory tracking
 - **Pentest findings** → Tracked through remediation lifecycle, retested before release
 - **Security posture report** → QA leadership, CISO office, Release Readiness Agent

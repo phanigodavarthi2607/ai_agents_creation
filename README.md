@@ -9,7 +9,6 @@ Every project in the organization can have its own:
 - **Workflow** (different blocks, gates, and agents per project)
 - **Coverage requirements** (different mandatory test categories)
 - **Quality thresholds** (stricter gates for critical projects)
-- **Compliance controls** (project-specific regulatory requirements)
 - **Jira configuration** (different custom fields, CSV formats, link types)
 - **Domain knowledge** (project-specific SLM knowledge base)
 
@@ -29,13 +28,16 @@ No code changes needed. Register a project config file and go.
 │  └──────────┬──────────┬──────────┬──────────┬──────────────────┘  │
 │             │          │          │          │                       │
 │  ┌──────────▼──┐ ┌─────▼────┐ ┌──▼───────┐ ┌▼────────────────┐   │
-│  │ Release     │ │Compliance│ │Cross-Team│ │ Test Metrics    │   │
-│  │ Readiness   │ │& Audit   │ │Dependency│ │ & Reporting     │   │
+│  │ Release     │ │Cross-Team│ │ Defect   │ │ Test Metrics    │   │
+│  │ Readiness   │ │Dependency│ │ Triage   │ │ & Reporting     │   │
 │  └─────────────┘ └──────────┘ └──────────┘ └─────────────────┘   │
 │  ┌─────────────┐ ┌──────────┐ ┌──────────┐ ┌─────────────────┐   │
-│  │ Regression  │ │ Defect   │ │Environmt │ │ API Contract    │   │
-│  │ Impact      │ │ Triage   │ │Validation│ │ Testing         │   │
+│  │ Regression  │ │ Security │ │Environmt │ │ API Contract    │   │
+│  │ Impact      │ │ Testing  │ │Validation│ │ Testing         │   │
 │  └─────────────┘ └──────────┘ └──────────┘ └─────────────────┘   │
+│  ┌─────────────┐                                                  │
+│  │ Automation  │                                                  │
+│  └─────────────┘                                                  │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │              PROJECT LEVEL (per project, configurable)              │
@@ -322,8 +324,7 @@ quality_gates_overrides:
 | Agent | File | Key Capability |
 |-------|------|---------------|
 | Organization Conductor | `org-conductor-agent.md` | Orchestrates cross-project workflows |
-| Release Readiness | `release-readiness-agent.md` | 10-gate go/no-go, uses strictest thresholds across projects |
-| Compliance & Audit | `compliance-audit-agent.md` | Org frameworks + project-specific controls |
+| Release Readiness | `release-readiness-agent.md` | 9-gate go/no-go, uses strictest thresholds across projects |
 | Security Testing | `security-testing-agent.md` | SAST, DAST, dependency scan, secrets detection, OWASP, pentest coordination |
 | Automation | `automation-agent.md` | Candidacy analysis, script generation, CI/CD integration, flaky test management |
 | Cross-Team Dependency | `cross-team-dependency-agent.md` | Intra- and cross-project dependency tracking |
@@ -386,7 +387,7 @@ Resolves participating projects → dependency analysis → environment validati
 @org-conductor-agent Release QA for Q3 2026 Release [PULSE, GXNG, ALPHA]
 ```
 
-Cross-project dependency scan → API contract validation → **full security assessment (SAST + dependencies + secrets + OWASP)** → compliance audit → **automation health check** → regression → metrics → go/no-go.
+Cross-project dependency scan → API contract validation → **full security assessment (SAST + dependencies + secrets + OWASP)** → **automation health check** → regression → metrics → go/no-go.
 
 ### 3. Security Scanning
 
@@ -430,13 +431,13 @@ Auto-detects project → triage → cross-project impact → notification → re
 @org-conductor-agent Quality assessment for PULSE project
 ```
 
-Per-project and aggregated metrics → compliance → environment health → risk summary.
+Per-project and aggregated metrics → environment health → risk summary.
 
 ---
 
 ## Quality Gates
 
-10 mandatory gates evaluated by the Release Readiness Agent:
+9 mandatory gates evaluated by the Release Readiness Agent:
 
 | Gate | Threshold (org default) | Can override per project? |
 |------|------------------------|--------------------------|
@@ -445,11 +446,10 @@ Per-project and aggregated metrics → compliance → environment health → ris
 | G3: Regression | All P1 suites passed | No (org minimum) |
 | G4: Coverage | ≥ 85% requirements | Yes (stricter only) |
 | G5: API Contracts | No breaking changes | No (org minimum) |
-| G6: Compliance | No CRITICAL findings | No (org minimum) |
-| G7: Dependencies | No blocked deps | No (org minimum) |
-| G8: Environment | Prod-like validated | No (org minimum) |
-| G9: Rollback | Documented + tested | No (org minimum) |
-| G10: Sign-off | All leads signed | No (org minimum) |
+| G6: Dependencies | No blocked deps | No (org minimum) |
+| G7: Environment | Prod-like validated | No (org minimum) |
+| G8: Rollback | Documented + tested | No (org minimum) |
+| G9: Sign-off | All leads signed | No (org minimum) |
 
 ---
 
@@ -485,7 +485,6 @@ Per-project and aggregated metrics → compliance → environment health → ris
   # Organization-level agents
   org-conductor-agent.md            # Cross-project orchestrator
   release-readiness-agent.md
-  compliance-audit-agent.md
   security-testing-agent.md         # SAST, DAST, OWASP, secrets, pentest
   automation-agent.md               # Script generation, CI/CD, flaky tests
   cross-team-dependency-agent.md

@@ -109,18 +109,6 @@ quality_gates_overrides:
     requirements_coverage_threshold: 90.0
 
 # ─────────────────────────────────────────────────────────
-# COMPLIANCE (project-level additions)
-# The org-level compliance frameworks always apply.
-# Add project-specific compliance requirements here.
-# ─────────────────────────────────────────────────────────
-compliance:
-  additional_controls:
-    financial_dual_verification: true
-    irr_calculation_reconciliation: true
-    cross_system_data_reconciliation: true
-  audit_frequency: "quarterly"
-
-# ─────────────────────────────────────────────────────────
 # JIRA FIELD MAPPINGS
 # Project-specific Jira custom field IDs.
 # Different projects may have different custom fields.

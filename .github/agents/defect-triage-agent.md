@@ -44,7 +44,7 @@ If the defect key's project is not registered, still proceed with org defaults b
 
 2. **Severity Assessment**
    Use the project's severity matrix (if defined in project config), else the org default:
-   - **S1 - Critical**: Production down, data corruption, financial calculation errors, regulatory compliance breach, security vulnerability
+   - **S1 - Critical**: Production down, data corruption, financial calculation errors, security vulnerability
    - **S2 - High**: Core workflow blocked, incorrect data displayed, significant performance degradation, no workaround available
    - **S3 - Medium**: Feature partially broken with workaround available, UI/UX issues affecting productivity, non-critical data issues
    - **S4 - Low**: Cosmetic issues, minor UI inconsistencies, documentation errors, enhancement requests miscategorized as bugs

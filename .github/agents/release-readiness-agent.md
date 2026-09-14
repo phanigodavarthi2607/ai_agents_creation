@@ -45,7 +45,6 @@ Collect from all source agents:
 - **Defect Triage Agent**: Open S1/S2 defects, defect trends, unresolved blockers
 - **Environment Validation Agent**: Environment health status for production deployment
 - **API Contract Testing Agent**: Contract compatibility status, breaking changes
-- **Compliance Audit Agent**: Regulatory compliance status, open audit findings
 - **Cross-Team Dependency Agent**: Unresolved cross-team dependencies, coordination risks
 
 ### 2. Release Quality Gates
@@ -59,11 +58,10 @@ Evaluate mandatory gates (all must pass for GO):
 | G3: Regression | All P1 regression suites executed and passed | Regression Impact Agent |
 | G4: Coverage | Requirements coverage ≥ 85%, all mandatory coverage categories met | Test Metrics Agent |
 | G5: API Contracts | No unresolved breaking changes | API Contract Testing Agent |
-| G6: Compliance | No CRITICAL audit findings, SOX controls verified | Compliance Audit Agent |
-| G7: Dependencies | No BLOCKED cross-team dependencies | Cross-Team Dependency Agent |
-| G8: Environment | Production-like environment validated, deployment procedure tested | Environment Validation Agent |
-| G9: Rollback | Rollback procedure documented and tested | Change Management |
-| G10: Sign-off | All team leads have signed off on their scope | Team Reports |
+| G6: Dependencies | No BLOCKED cross-team dependencies | Cross-Team Dependency Agent |
+| G7: Environment | Production-like environment validated, deployment procedure tested | Environment Validation Agent |
+| G8: Rollback | Rollback procedure documented and tested | Change Management |
+| G9: Sign-off | All team leads have signed off on their scope | Team Reports |
 
 ### 3. Risk Assessment
 
@@ -110,7 +108,7 @@ If some gates are AMBER (not GREEN, not RED):
     }
   ],
   "gatesSummary": {
-    "total": 10,
+    "total": 9,
     "green": 8,
     "amber": 1,
     "red": 1,
@@ -189,5 +187,4 @@ The Release Readiness assessment is the terminal output of the QA agent pipeline
 - Release Manager (for go/no-go decision)
 - QA Leadership (for quality oversight)
 - Development Leadership (for blocker resolution)
-- Compliance Team (for regulatory awareness)
 - Change Advisory Board (for production change approval)

@@ -74,10 +74,9 @@ Triggered before a release. May include stories from multiple projects.
 1. **Resolve participating projects** from the release scope
 2. **Full Dependency Scan** → Cross-Team Dependency Agent (all projects in release)
 3. **API Contract Validation** → API Contract Testing Agent (all modified services from all project service registries)
-4. **Compliance Audit** → Compliance & Audit Agent (apply org frameworks + each project's `compliance.additional_controls`)
-5. **Cross-Project Regression** → Regression Impact Agent (full release scope)
-6. **Metrics Aggregation** → Test Metrics Agent (release report across all projects)
-7. **Release Readiness** → Release Readiness Agent (evaluate quality gates — apply org defaults, then layer project-specific overrides, use the strictest value for cross-project releases)
+4. **Cross-Project Regression** → Regression Impact Agent (full release scope)
+5. **Metrics Aggregation** → Test Metrics Agent (release report across all projects)
+6. **Release Readiness** → Release Readiness Agent (evaluate quality gates — apply org defaults, then layer project-specific overrides, use the strictest value for cross-project releases)
 
 ### Workflow 3: Defect Escalation
 
@@ -106,9 +105,8 @@ On-demand organization or single-project health check.
 
 1. **Resolve scope** (all projects, specific projects, or time range)
 2. **Metrics Snapshot** → Test Metrics Agent (dashboard filtered by scope)
-3. **Compliance Check** → Compliance & Audit Agent (quick scan per project)
-4. **Environment Health** → Environment Validation Agent (all environments for in-scope projects)
-5. **Risk Summary** → Release Readiness Agent (overall risk posture)
+3. **Environment Health** → Environment Validation Agent (all environments for in-scope projects)
+4. **Risk Summary** → Release Readiness Agent (overall risk posture)
 
 ## Hard Rules
 
@@ -166,7 +164,6 @@ Maintain `org_runs/<scope_id>/org_status_dashboard.md`:
 | Environment Health | 🟡 | ... | ... |
 | Team Execution | 🔵 | ... | ... |
 | Regression | ⚪ | ... | ... |
-| Compliance | ⚪ | ... | ... |
 | Release Readiness | ⚪ | ... | ... |
 
 ## Per-Project Status
@@ -205,7 +202,6 @@ When a new project is registered:
 2. Its defects are automatically routed by the Defect Triage Agent using the project's severity matrix
 3. Its services are automatically included in cross-project dependency analysis
 4. Its quality gates are automatically evaluated by the Release Readiness Agent
-5. Its compliance requirements are automatically audited (org frameworks + project additions)
 
 No changes to any agent are needed — the project config file drives everything.
 
@@ -215,5 +211,4 @@ Organization-level outputs go to:
 - QA Director / VP of Quality
 - Release Management
 - Program Management Office
-- Internal Audit (for compliance workflows)
 - Per-project QA leads (filtered to their project's data)

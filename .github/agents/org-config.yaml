@@ -47,7 +47,7 @@ defaults:
   severity_matrix:
     S1:
       name: "Critical"
-      definition: "Production down, data corruption, financial calculation errors, regulatory compliance breach, security vulnerability"
+      definition: "Production down, data corruption, financial calculation errors, security vulnerability"
       sla_hours: 4
       escalation: "immediate"
     S2:
@@ -96,34 +96,19 @@ defaults:
     G5_api_contracts:
       no_breaking_changes: true
       description: "No unresolved breaking API changes"
-    G6_compliance:
-      no_critical_findings: true
-      description: "No CRITICAL compliance/audit findings"
-    G7_cross_team_dependencies:
+    G6_cross_team_dependencies:
       no_blocked_dependencies: true
       description: "No BLOCKED cross-team dependencies"
-    G8_environment:
+    G7_environment:
       production_like_validated: true
       description: "Production-like environment validated before deployment"
-    G9_rollback:
+    G8_rollback:
       procedure_documented: true
       procedure_tested: true
       description: "Rollback procedure documented and tested"
-    G10_sign_off:
+    G9_sign_off:
       all_team_leads: true
       description: "All participating team leads have signed off"
-
-  # Compliance frameworks applicable org-wide
-  compliance:
-    frameworks:
-      - "SOX Section 404"
-      - "SEC 17a-4"
-      - "OCC Guidelines"
-      - "GDPR (data privacy in test environments)"
-    mandatory_controls:
-      segregation_of_duties: true
-      audit_trail: true
-      data_masking: true
 
   # API standards (org-wide)
   api_standards:
@@ -243,8 +228,6 @@ org_pipelines:
       - agent: "security-testing-agent"
         purpose: "Full security assessment (SAST + dependency + secrets + OWASP)"
         mode: "full"
-      - agent: "compliance-audit-agent"
-        purpose: "Regulatory compliance verification (includes security findings)"
       - agent: "automation-agent"
         purpose: "Automation health check and coverage report"
         mode: "health"
@@ -273,8 +256,6 @@ org_pipelines:
     sequence:
       - agent: "test-metrics-agent"
         purpose: "Executive dashboard"
-      - agent: "compliance-audit-agent"
-        purpose: "Quick compliance scan"
       - agent: "environment-validation-agent"
         purpose: "All environment health"
       - agent: "release-readiness-agent"
