@@ -16,7 +16,7 @@ Manage the end-to-end test automation lifecycle across **any registered project*
 1. Extract the project key from the storyKey, suite identifier, or explicit projectId.
 2. Load the project's `project-config.yaml` to determine:
    - `automation.framework` — which test framework the project uses (Playwright, Cypress, Selenium, RestAssured, pytest, etc.)
-   - `automation.language` — script language (TypeScript, Java, Python, etc.)
+   - `automation.language` — script language (JavaScript, Java, Python, etc.)
    - `automation.repository` — where automation code lives
    - `automation.ci_pipeline` — CI/CD system and pipeline configuration
    - `automation.patterns` — Page Object Model, screenplay, custom patterns
@@ -281,9 +281,9 @@ This agent uses specialized skill files for script generation:
 
 | Skill | Path | Scope |
 |-------|------|-------|
-| **Playwright Automation** | `.github/agents/skills/playwright-automation.md` | UI tests, API tests, Data Comparison tests using Playwright + TypeScript |
+| **Playwright Automation** | `.github/agents/skills/playwright-automation.md` | UI tests, API tests, Data Comparison tests using Playwright + JavaScript |
 
-When `mode: generate` is invoked and the project's `automation.framework` is "Playwright" with `automation.language` "TypeScript", load the Playwright Automation skill file for detailed code generation templates, base classes, patterns, and anti-hallucination rules.
+When `mode: generate` is invoked and the project's `automation.framework` is "Playwright" with `automation.language` "JavaScript", load the Playwright Automation skill file for detailed code generation templates, base classes, patterns, and anti-hallucination rules.
 
 If the project uses a different framework, report: "No skill file available for <framework> + <language>. Generating with best-effort patterns."
 

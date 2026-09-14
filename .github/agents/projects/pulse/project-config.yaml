@@ -162,7 +162,7 @@ testing_type_mapping:
 # ─────────────────────────────────────────────────────────
 automation:
   framework: "Playwright"
-  language: "TypeScript"
+  language: "JavaScript"
   repository: ""
   ci_pipeline: "github-actions"
   patterns: ["PageObjectModel", "fixtures"]

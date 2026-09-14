@@ -214,7 +214,7 @@ testing_type_mapping:
 # ─────────────────────────────────────────────────────────
 automation:
   framework: ""                   # e.g., "Playwright", "Cypress", "pytest", "RestAssured"
-  language: ""                    # e.g., "TypeScript", "Python", "Java"
+  language: ""                    # e.g., "JavaScript", "Python", "Java"
   repository: ""                  # Repo URL where automation code lives
   ci_pipeline: ""                 # e.g., "github-actions", "jenkins", "gitlab-ci"
   patterns: []                    # e.g., ["PageObjectModel", "fixtures"]
@@ -224,7 +224,7 @@ automation:
   # ── PLAYWRIGHT QUICKSTART ──
   # If using Playwright + TypeScript, set:
   #   framework: "Playwright"
-  #   language: "TypeScript"
+  #   language: "JavaScript"
   #   patterns: ["PageObjectModel", "fixtures"]
   #   locator_strategy: "data-testid"
   # Then the Automation Agent will use the Playwright Automation skill
