@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "project": "_template",
+    "category": "domain_knowledge",
+    "description": "Template for project-specific domain knowledge. Copy and customize for your project.",
+    "version": "1.0"
+  },
+  "entries": [
+    {
+      "id": "template_entry_1",
+      "text": "Replace this with domain-specific knowledge relevant to your project. Example: 'In our system, Position ID is calculated by concatenating Fund Code + Account Number + Security ID.'",
+      "category": "domain_knowledge",
+      "source": "project-documentation",
+      "tags": ["example"]
+    }
+  ]
+}

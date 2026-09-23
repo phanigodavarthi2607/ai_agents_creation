@@ -1,0 +1,62 @@
+[
+  {
+    "id": "jira_001",
+    "text": "Jira issue types for QA workflow: Story (requirement to test), Epic (collection of stories), Bug (defect), Test (Xray test case), Test Execution (Xray test run), Sub-task (child of story, e.g., 'Test case design'). Stories are linked to Tests via 'is tested by' relationship.",
+    "category": "jira_integration",
+    "tags": ["jira", "issue-types", "xray"]
+  },
+  {
+    "id": "jira_002",
+    "text": "Xray Test Management integrates with Jira to manage test cases, test execution, and test coverage. Test issues have: summary, steps (with actions and expected results), pre-conditions, test type (Manual/Automated), and custom fields. Xray tracks test execution status and provides coverage reports.",
+    "category": "jira_integration",
+    "tags": ["xray", "test-management"]
+  },
+  {
+    "id": "jira_003",
+    "text": "Jira Testing Type field (customfield_10302) supports exactly 5 values: Functional, Non Functional, Regression, End to End, Negative. Any generated test case must normalize its testing type to one of these 5 values before publishing to Jira. Unknown types default to Functional.",
+    "category": "jira_integration",
+    "tags": ["jira", "testing-type", "custom-field"]
+  },
+  {
+    "id": "jira_004",
+    "text": "Testing Type normalization mapping: Functional -> Functional, Data Validation -> Functional, Filtering -> Functional, Configuration -> Functional, Metadata -> Functional, Parametrization -> Functional, Execution -> Functional, Audit & Logging -> Functional, Performance -> Non Functional, Load Testing -> Non Functional, Stress Testing -> Non Functional, Regression -> Regression, End to End -> End to End, Integration -> End to End, Negative -> Negative, Error Handling -> Negative, Boundary -> Functional or Negative, Input Validation -> Functional or Negative.",
+    "category": "jira_integration",
+    "tags": ["jira", "testing-type", "normalization"]
+  },
+  {
+    "id": "jira_005",
+    "text": "Jira field mapping for test case CSV import: Test Case ID -> __xray_testId, Test Type -> xray_testtype, Testing Type -> customfield_10302, Assignee Name -> __assignee_name, Summary -> summary, Step Action -> __xray_step_action, Step Result -> __xray_step_result, Expected result -> __xray_step_result, Priority -> __priority_name, Story -> __issuelink_outward_10007, Data -> __step_data.",
+    "category": "jira_integration",
+    "tags": ["jira", "field-mapping", "csv", "xray"]
+  },
+  {
+    "id": "jira_006",
+    "text": "PULSE-3336 CSV format for test case export: Columns are Test Scenario, Test Case ID, Test Type, Testing Type, Assignee Name, Summary, Data, Step Action, Expected result, Priority, Story. First row of each test case contains all metadata plus first step. Subsequent rows have blank metadata columns with only Step Action and Expected result. Blank row separates different test cases.",
+    "category": "jira_integration",
+    "tags": ["pulse-3336", "csv-format", "export"]
+  },
+  {
+    "id": "jira_007",
+    "text": "Jira REST API common issues: Sub-task direct reads may return HTTP 404 even when the sub-task exists in the parent's subtasks array (known Jira Cloud bug). Workaround: read parent issue, extract sub-task metadata from fields.subtasks array. Always implement retry logic with exponential backoff for API calls (3 retries recommended).",
+    "category": "jira_integration",
+    "tags": ["jira", "api", "known-bug", "workaround"]
+  },
+  {
+    "id": "jira_008",
+    "text": "Idempotent Jira operations: Before creating a test case, search for existing tests with matching summary/test ID. Before creating a link, check if the link already exists. Before adding to test execution, check if the test is already included. This prevents duplicate creation on re-runs.",
+    "category": "jira_integration",
+    "tags": ["jira", "idempotent", "best-practice"]
+  },
+  {
+    "id": "jira_009",
+    "text": "Jira Acceptance Criteria handling: AC may be stored in the description field, a custom AC field, or as a checklist. When extracting AC, preserve the original text verbatim. Assign sequential IDs (AC1, AC2, ...). Include source reference (jira:<storyKey>#AC<n>). Never rephrase or merge AC items — downstream agents depend on exact wording.",
+    "category": "jira_integration",
+    "tags": ["jira", "acceptance-criteria", "extraction"]
+  },
+  {
+    "id": "jira_010",
+    "text": "Jira Priority values: Critical (P1 - system down, blocking), High (P2 - major feature broken), Medium (P3 - feature works with workaround), Low (P4 - cosmetic, nice to have). Map test case priority based on the AC importance and business impact of the feature being tested.",
+    "category": "jira_integration",
+    "tags": ["jira", "priority", "mapping"]
+  }
+]

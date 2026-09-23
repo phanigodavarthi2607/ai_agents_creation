@@ -1,0 +1,62 @@
+[
+  {
+    "id": "pm_domain_001",
+    "text": "Private Markets encompasses investment strategies in non-publicly-traded assets including private equity, private credit, real estate, infrastructure, and natural resources. Key entities: Fund, Investment, Portfolio Company, Limited Partner (LP), General Partner (GP), Commitment, Capital Call, Distribution, NAV (Net Asset Value).",
+    "category": "domain_knowledge",
+    "tags": ["private-markets", "fund", "investment"]
+  },
+  {
+    "id": "pm_domain_002",
+    "text": "Fund of Funds (FOF) is a pooled investment strategy that invests in other funds rather than directly in securities. FOF structures add a layer of diversification but also a layer of fees. Key metrics: IRR (Internal Rate of Return), TVPI (Total Value to Paid-In), DPI (Distributions to Paid-In), RVPI (Residual Value to Paid-In).",
+    "category": "domain_knowledge",
+    "tags": ["fof", "fund-of-funds", "metrics"]
+  },
+  {
+    "id": "pm_domain_003",
+    "text": "IRR (Internal Rate of Return) is the discount rate that makes the net present value of all cash flows equal to zero. In private markets, IRR accounts for the timing of capital calls and distributions. Since IRR is the primary performance metric, IRR calculation accuracy is critical and requires precise Position ID and transaction date tracking.",
+    "category": "domain_knowledge",
+    "tags": ["irr", "performance", "calculation"]
+  },
+  {
+    "id": "pm_domain_004",
+    "text": "Transaction Types in Private Markets: Contribution (capital call — LP sends money to fund), Distribution (fund returns money to LP — can be return of capital or profit), Transfer (change of ownership between LPs), Commitment (total amount LP agrees to invest), Recallable Distribution (distribution that can be called back by the GP).",
+    "category": "domain_knowledge",
+    "tags": ["transaction", "contribution", "distribution"]
+  },
+  {
+    "id": "pm_domain_005",
+    "text": "Position ID in investment data uniquely identifies a holding/position within a fund. Some transactions (contributions, distributions) may have null POSITION_ID when they apply at the fund level rather than a specific position. Testing must cover: transactions with POSITION_ID, transactions without POSITION_ID (null), and mixed scenarios within the same fund.",
+    "category": "domain_knowledge",
+    "tags": ["position-id", "investment", "data-model"]
+  },
+  {
+    "id": "pm_domain_006",
+    "text": "Pantheon is a global private markets investment manager. Pantheon investment files use Deal_ID as the primary identifier for tracking investments. Example: Deal_ID = 2280 for specific fund investment records. When processing Pantheon data, use PNT column references in scenario matrices and Deal_ID for row-level filtering.",
+    "category": "domain_knowledge",
+    "tags": ["pantheon", "client", "deal-id"]
+  },
+  {
+    "id": "pm_domain_007",
+    "text": "BlackRock is a global investment management firm. BlackRock investment files use their own identifier structure. When processing BlackRock data, use BLK column references in scenario matrices. BlackRock data may have different column layouts and naming conventions compared to Pantheon data.",
+    "category": "domain_knowledge",
+    "tags": ["blackrock", "client"]
+  },
+  {
+    "id": "pm_domain_008",
+    "text": "Data Quality Rules in Private Markets: Client ID must be non-null and reference a valid client. Batch ID follows a quarterly pattern (e.g., 2026-Q2-001). Expected record counts must match between source and target. Transaction amounts must be positive for contributions, positive for distributions. Dates must be valid business dates.",
+    "category": "domain_knowledge",
+    "tags": ["data-quality", "validation", "business-rules"]
+  },
+  {
+    "id": "pm_domain_009",
+    "text": "Investment Data Pipeline flow: Source files (Pantheon/BlackRock extracts) -> Ingestion (parse and validate) -> Transformation (apply business rules, calculate derived fields) -> Loading (target database/warehouse) -> Reconciliation (source-to-target comparison). Each stage requires data quality checks.",
+    "category": "domain_knowledge",
+    "tags": ["data-pipeline", "etl", "investment"]
+  },
+  {
+    "id": "pm_domain_010",
+    "text": "PFPT and PFPM are sprint prefixes indicating domain classification. PFPT (Private Fund Products Technology) maps to the FOF domain with target folder FOF/. PFPM (Private Fund Private Markets) maps to Private Markets domain with target folder Private_Markets/. Sprint classification determines knowledge base routing and domain-specific test patterns.",
+    "category": "domain_knowledge",
+    "tags": ["sprint", "classification", "domain-routing"]
+  }
+]
