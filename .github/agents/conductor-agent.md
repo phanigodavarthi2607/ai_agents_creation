@@ -23,10 +23,10 @@ This conductor supports **any project** in the organization. The workflow blocks
 
 ### Example: Different Projects, Different Workflows
 
-**PULSE project** (inherits org default — 4 blocks):
+**PULSE project** (inherits org default — 5 blocks):
 ```
-Knowledge Base → Discovery → Quality → Release
-   KB_APPROVED   DISCOVERY_APPROVED  QUALITY_APPROVED  APPROVE_FOR_JIRA
+Knowledge Base → Discovery → Quality → Automation → Release
+   KB_APPROVED   DISCOVERY_APPROVED  QUALITY_APPROVED  AUTOMATION_APPROVED  APPROVE_FOR_JIRA
 ```
 
 **A data pipeline project** (custom 3-block workflow):
@@ -76,6 +76,9 @@ The domain folder is resolved from the project's `domain_routing` rules:
 - `runs/<storyKey>/quality_pack.json`
 - `runs/<storyKey>/<storyKey>_testcases.csv`
 - `runs/<storyKey>/review_pack.md`
+- `runs/<storyKey>/automation_candidacy.json`
+- `runs/<storyKey>/automation_scripts/` (generated test scripts)
+- `runs/<storyKey>/automation_map.json` (test case ID → script path mapping)
 - `runs/<storyKey>/publish_report.json`
 - `runs/<storyKey>/agent_bus.jsonl`
 - `runs/<storyKey>/status_dashboard.md`
@@ -116,7 +119,7 @@ Maintain status_dashboard.md with icons:
 - ⚪ NOT_STARTED
 - 🟣 SKIPPED
 
-The status board dynamically reflects the blocks defined in the project's workflow config — it is not a hardcoded 4-block layout.
+The status board dynamically reflects the blocks defined in the project's workflow config — it is not a hardcoded 5-block layout.
 
 **Status board integrity rules:**
 - Only update a block's status based on verified agent output.

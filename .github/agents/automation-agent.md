@@ -26,7 +26,7 @@ If the project key is not registered, report: "Project <key> is not registered. 
 
 ## Inputs
 
-- **mode**: analyze | generate | integrate | health | flaky | report
+- **mode**: workflow | analyze | generate | integrate | health | flaky | report
 - **storyKey** (optional): Jira story to generate automation for
 - **testCaseIds** (optional): Specific test case IDs from quality_pack.json to automate
 - **suiteId** (optional): Existing automation suite to analyze/report on
@@ -35,9 +35,27 @@ If the project key is not registered, report: "Project <key> is not registered. 
 
 ## Input Validation
 
-- `mode` must be one of [analyze, generate, integrate, health, flaky, report]. If invalid, stop and list valid modes.
+- `mode` must be one of [workflow, analyze, generate, integrate, health, flaky, report]. If invalid, stop and list valid modes.
+- For `workflow` mode, `storyKey` is required (the Conductor provides it).
 - For `generate` mode, at least one of `storyKey` or `testCaseIds` must be provided.
 - For `integrate` mode, `pipelineId` or project CI config must be available.
+
+## Tasks
+
+### Mode: workflow — Story Workflow Automation Block
+
+This mode is used when the Automation Agent runs as part of the team-level story workflow (the Automation block between Quality and Release). The Conductor invokes this mode automatically after `QUALITY_APPROVED`.
+
+1. **Read approved test cases** from `runs/<storyKey>/quality_pack.json`
+2. **Candidacy analysis** — Score every test case using the candidacy scoring criteria (see `analyze` mode). Write the candidacy report to `runs/<storyKey>/automation_candidacy.json`.
+3. **Script generation** — For all test cases with candidacy score >= 60 (configurable via project's `automation.minimum_automation_rate`), generate automation scripts using the project's framework/language. Load the appropriate skill file (e.g., Playwright Automation Skill for Playwright + JavaScript projects).
+4. **Output artifacts**:
+   - `runs/<storyKey>/automation_candidacy.json` — Full candidacy report for all test cases
+   - `runs/<storyKey>/automation_scripts/` — Generated test scripts (organized by test component: `ui/`, `api/`, `data/`)
+   - `runs/<storyKey>/automation_map.json` — Maps each test case ID to its generated script path (or `null` if not automated, with the reason)
+5. **Summary to Conductor** — Report how many test cases were automated vs deferred, total scripts generated, any generation failures, and estimated manual-only tests remaining.
+
+The Conductor then asks the user for `AUTOMATION_APPROVED` before proceeding to the Release block.
 
 ## Tasks
 
@@ -161,6 +179,41 @@ Organization-wide automation metrics:
 
 ## Output (strict JSON)
 
+### Workflow Output (story workflow Automation block)
+
+```json
+{
+  "projectId": "<project>",
+  "storyKey": "<key>",
+  "workflowTimestamp": "<ISO-8601>",
+  "candidacySummary": {
+    "totalTestCases": 24,
+    "automatable": 18,
+    "deferred": 4,
+    "notRecommended": 2
+  },
+  "generationSummary": {
+    "totalGenerated": 18,
+    "byComponent": {
+      "ui": 6,
+      "api": 8,
+      "dataComparison": 4
+    },
+    "partial": 1,
+    "failed": 0,
+    "manualOnly": 6,
+    "manualOnlyReasons": [
+      {"testCaseId": "TC_PULSE-3730_019", "reason": "Requires visual inspection of PDF layout — not automatable"}
+    ]
+  },
+  "artifacts": {
+    "candidacyReport": "runs/<storyKey>/automation_candidacy.json",
+    "scriptsDirectory": "runs/<storyKey>/automation_scripts/",
+    "automationMap": "runs/<storyKey>/automation_map.json"
+  }
+}
+```
+
 ### Analyze Output
 
 ```json
@@ -268,7 +321,8 @@ Organization-wide automation metrics:
 
 | Agent | Integration |
 |-------|------------|
-| Test Design Agent | Receives quality_pack.json → analyzes candidacy → generates scripts |
+| Test Design Agent | Receives quality_pack.json with `automationHints` per test case → candidacy analysis uses hints for scoring → generates scripts |
+| Conductor Agent | Invoked in `workflow` mode during the Automation block; reports back with candidacy + scripts for gate approval |
 | Test Metrics Agent | Feeds automation rate, pass rates, flaky rates into org dashboards |
 | Regression Impact Agent | Identifies which automated regression suites must run |
 | Environment Validation Agent | Validates automation execution environment before CI runs |

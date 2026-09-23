@@ -85,7 +85,7 @@ service_registry:
 # WORKFLOW CONFIGURATION
 # ─────────────────────────────────────────────────────────
 #
-# mode: "inherit"  → Use the org default 4-block workflow
+# mode: "inherit"  → Use the org default 5-block workflow
 # mode: "custom"   → Define your own blocks below
 #
 # The custom workflow lets you:

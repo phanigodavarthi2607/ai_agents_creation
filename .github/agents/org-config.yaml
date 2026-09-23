@@ -180,13 +180,19 @@ defaults:
         name: "Quality"
         agents: ["test-design-agent", "test-data-agent", "test-review-agent"]
         gate: "QUALITY_APPROVED"
-        description: "Generate, populate, and review test cases"
+        description: "Generate automation-ready test cases, populate test data, and review"
+
+      - id: "automation"
+        name: "Automation"
+        agents: ["automation-agent"]
+        gate: "AUTOMATION_APPROVED"
+        description: "Score test cases for automation candidacy, generate automation scripts for high-scoring candidates"
 
       - id: "release"
         name: "Release"
         agents: ["publish-jira-agent"]
         gate: "APPROVE_FOR_JIRA"
-        description: "Publish approved test cases to Jira/Xray"
+        description: "Publish approved test cases and automation mapping to Jira/Xray"
     mandatory_coverage_categories: ["UI", "API", "Backend", "DataComparison"]
 
 # ─────────────────────────────────────────────────────────
@@ -203,18 +209,15 @@ org_pipelines:
       - agent: "environment-validation-agent"
         purpose: "Validate all team environments"
       - agent: "team-conductors"
-        purpose: "Teams execute their story workflows in parallel"
+        purpose: "Teams execute their 5-block story workflows in parallel (including automation script generation)"
         parallel: true
-      - agent: "automation-agent"
-        purpose: "Analyze new test cases for automation candidacy"
-        mode: "analyze"
       - agent: "security-testing-agent"
         purpose: "Scan sprint code changes for security issues"
         mode: "sast"
       - agent: "regression-impact-agent"
         purpose: "Cross-team regression scope"
       - agent: "test-metrics-agent"
-        purpose: "Sprint dashboard (includes automation and security metrics)"
+        purpose: "Sprint dashboard (includes automation coverage and security metrics)"
       - agent: "release-readiness-agent"
         purpose: "Sprint go/no-go"
 

@@ -45,7 +45,7 @@ No code changes needed. Register a project config file and go.
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
 │  │ Project A   │  │ Project B   │  │ Project C   │  ...           │
 │  │ (PULSE)     │  │ (GXNG)      │  │ (ALPHA)     │                │
-│  │ 4-block     │  │ 3-block     │  │ 5-block     │                │
+│  │ 5-block     │  │ 3-block     │  │ 6-block     │                │
 │  │ workflow    │  │ workflow    │  │ workflow    │                │
 │  │             │  │             │  │             │                │
 │  │ Team PFPT   │  │ Team GX1    │  │ Team Core   │                │
@@ -57,11 +57,11 @@ No code changes needed. Register a project config file and go.
 │  │   Reads project config → runs the right workflow│                │
 │  └──────┬──────────┬──────────┬───────────────────┘                │
 │         │          │          │                                     │
-│  ┌──────▼──┐ ┌─────▼────┐ ┌──▼───────┐  (+ more per config)      │
-│  │KB Agent │ │Test      │ │Publish   │                             │
-│  │Story    │ │Design    │ │Jira      │                             │
-│  │Analysis │ │Review    │ │          │                             │
-│  └─────────┘ └──────────┘ └──────────┘                             │
+│  ┌──────▼──┐ ┌─────▼────┐ ┌──▼───────┐ ┌──────────┐              │
+│  │KB Agent │ │Test      │ │Automate  │ │Publish   │              │
+│  │Story    │ │Design    │ │Scripts   │ │Jira      │              │
+│  │Analysis │ │Review    │ │          │ │          │              │
+│  └─────────┘ └──────────┘ └──────────┘ └──────────┘              │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                    KNOWLEDGE LAYER (per project)                    │
@@ -114,11 +114,11 @@ domain_routing:
 
 ### Step 3: Choose your workflow
 
-**Option A** — Use the org default 4-block workflow:
+**Option A** — Use the org default 5-block workflow:
 
 ```yaml
 story_workflow:
-  mode: "inherit"    # Uses KB → Discovery → Quality → Release
+  mode: "inherit"    # Uses KB → Discovery → Quality → Automation → Release
 ```
 
 **Option B** — Define a custom workflow for your project:
@@ -299,6 +299,9 @@ quality_gates_overrides:
     pass_rate_threshold: 99.0    # Stricter than org default 95%
   G4_coverage:
     requirements_coverage_threshold: 95.0   # Stricter than org default 85%
+
+automation:
+  minimum_automation_rate: 80.0    # Stricter than org default 60%
 ```
 
 ---
@@ -364,7 +367,7 @@ Settings are resolved in this priority order:
 @org-conductor-agent Sprint coordination for [PFPT Sprint 24, GX Sprint 12]
 ```
 
-Resolves participating projects → dependency analysis → environment validation → team conductors execute in parallel → **automation candidacy analysis** → **security scanning (SAST)** → regression → metrics → readiness.
+Resolves participating projects → dependency analysis → environment validation → team conductors execute 5-block workflows in parallel (including automation script generation per story) → **security scanning (SAST)** → regression → metrics → readiness.
 
 ### 2. Release QA
 
@@ -373,7 +376,7 @@ Resolves participating projects → dependency analysis → environment validati
 @org-conductor-agent Release QA for Q3 2026 Release [PULSE, GXNG, ALPHA]
 ```
 
-Cross-project dependency scan → API contract validation → **full security assessment (SAST + dependencies + secrets + OWASP)** → **automation health check** → regression → metrics → go/no-go.
+Cross-project dependency scan → API contract validation → **full security assessment (SAST + dependencies + secrets + OWASP)** → **automation health check (cross-project)** → regression → metrics → go/no-go.
 
 ### 3. Security Scanning
 
@@ -574,22 +577,30 @@ This is the most common operation. It runs the full test case lifecycle for a si
 2. Copilot asks you for the gate token: `KB_APPROVED`
 3. **Discovery block** — Analysis Agent and Test Planning Agent analyze the story, select testing techniques, and produce `runs/PULSE-3730/discovery_context.json`
 4. You approve: `DISCOVERY_APPROVED`
-5. **Quality block** — Test Design Agent generates test cases, Test Data Agent creates data, Test Review Agent reviews. Output: `runs/PULSE-3730/quality_pack.json` and `runs/PULSE-3730/PULSE-3730_testcases.csv`
+5. **Quality block** — Test Design Agent generates automation-ready test cases (with locator hints, parameterized data, machine-verifiable assertions), Test Data Agent creates data, Test Review Agent reviews. Output: `runs/PULSE-3730/quality_pack.json` and `runs/PULSE-3730/PULSE-3730_testcases.csv`
 6. You approve: `QUALITY_APPROVED`
-7. **Release block** — Publish Jira Agent creates test cases in Jira, links them to the story with "is tested by", and produces `runs/PULSE-3730/publish_report.json`
-8. You approve: `APPROVE_FOR_JIRA`
+7. **Automation block** — Automation Agent scores every test case for automation candidacy, generates Playwright scripts for high-scoring candidates, and produces the candidacy report + scripts. Output: `runs/PULSE-3730/automation_candidacy.json`, `runs/PULSE-3730/automation_scripts/`, `runs/PULSE-3730/automation_map.json`
+8. You approve: `AUTOMATION_APPROVED`
+9. **Release block** — Publish Jira Agent creates test cases in Jira, links them to the story with "is tested by", and produces `runs/PULSE-3730/publish_report.json`
+10. You approve: `APPROVE_FOR_JIRA`
 
 **Files created during this flow:**
 
 ```
-PFPT/PULSE-3730_knowledge_base.md       # Domain knowledge document
-runs/PULSE-3730/discovery_context.json   # Analysis + test techniques
-runs/PULSE-3730/quality_pack.json        # All test cases (structured JSON)
-runs/PULSE-3730/PULSE-3730_testcases.csv # Test cases in Jira CSV format
-runs/PULSE-3730/review_pack.md           # Review feedback
-runs/PULSE-3730/publish_report.json      # Jira publishing results
-runs/PULSE-3730/agent_bus.jsonl          # Communication log between agents
-runs/PULSE-3730/status_dashboard.md      # Visual status of each block
+PFPT/PULSE-3730_knowledge_base.md          # Domain knowledge document
+runs/PULSE-3730/discovery_context.json      # Analysis + test techniques
+runs/PULSE-3730/quality_pack.json           # All test cases (structured JSON with automation hints)
+runs/PULSE-3730/PULSE-3730_testcases.csv    # Test cases in Jira CSV format
+runs/PULSE-3730/review_pack.md              # Review feedback
+runs/PULSE-3730/automation_candidacy.json   # Candidacy scores for every test case
+runs/PULSE-3730/automation_scripts/         # Generated Playwright test scripts
+  ui/                                       #   UI test scripts
+  api/                                      #   API test scripts
+  data/                                     #   Data comparison test scripts
+runs/PULSE-3730/automation_map.json         # Test case ID → script path mapping
+runs/PULSE-3730/publish_report.json         # Jira publishing results
+runs/PULSE-3730/agent_bus.jsonl             # Communication log between agents
+runs/PULSE-3730/status_dashboard.md         # Visual status of each block
 ```
 
 #### Scenario 2: Sprint Coordination (Org-Level)
@@ -603,12 +614,11 @@ Coordinate QA across teams and projects for a sprint.
 This triggers a sequence of org-level agents:
 1. Cross-Team Dependency Agent checks for blockers between teams
 2. Environment Validation Agent verifies QA environments
-3. Team Conductors process stories in parallel (one per team)
-4. Automation Agent identifies new candidates for automation
-5. Security Testing Agent runs SAST scan on sprint code changes
-6. Regression Impact Agent scopes cross-team regression
-7. Test Metrics Agent produces a sprint dashboard
-8. Release Readiness Agent evaluates 9 quality gates
+3. Team Conductors process stories in parallel (each running the 5-block workflow including automation)
+4. Security Testing Agent runs SAST scan on sprint code changes
+5. Regression Impact Agent scopes cross-team regression
+6. Test Metrics Agent produces a sprint dashboard (includes automation coverage)
+7. Release Readiness Agent evaluates 9 quality gates
 
 #### Scenario 3: Release Go/No-Go (Org-Level)
 
@@ -626,9 +636,9 @@ Or for a multi-project release:
 
 The Release Readiness Agent evaluates all 9 gates and produces a GO / NO_GO / CONDITIONAL_GO recommendation with evidence for each gate.
 
-#### Scenario 4: Generate Automation Scripts
+#### Scenario 4: Generate Automation Scripts (Standalone)
 
-After test cases are designed, generate Playwright automation code.
+Automation scripts are generated automatically as part of every story workflow (the Automation block). But you can also invoke the Automation Agent directly for existing test cases:
 
 ```
 @automation-agent Generate scripts for PULSE-3730
@@ -713,11 +723,12 @@ Conductor: "Starting Discovery block..."
 
 **You control the pace.** No test cases get published to Jira without your explicit `APPROVE_FOR_JIRA` token. You can review, ask questions, request changes, or reject at any gate.
 
-Gate tokens for the default 4-block workflow:
+Gate tokens for the default 5-block workflow:
 1. `KB_APPROVED` — after knowledge base is built
 2. `DISCOVERY_APPROVED` — after analysis and test planning
 3. `QUALITY_APPROVED` — after test case design, data, and review
-4. `APPROVE_FOR_JIRA` — before publishing to Jira
+4. `AUTOMATION_APPROVED` — after candidacy analysis and script generation
+5. `APPROVE_FOR_JIRA` — before publishing to Jira
 
 ---
 

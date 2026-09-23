@@ -20,7 +20,7 @@ The Organization Conductor works across **any number of projects**, each with it
   ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
   │ Project A │ │ Project B │ │ Project C │ │ Project D │
   │ (PULSE)   │ │ (GXNG)    │ │ (ALPHA)   │ │ (CRDM)    │
-  │ 4-block   │ │ 3-block   │ │ 5-block   │ │ 3-block   │
+  │ 5-block   │ │ 3-block   │ │ 5-block   │ │ 3-block   │
   │ workflow   │ │ workflow   │ │ workflow   │ │ workflow   │
   │           │ │           │ │           │ │           │
   │ Team PFPT │ │ Team GX1  │ │ Team Core │ │ Team DM1  │
@@ -57,7 +57,7 @@ Triggered at sprint start. Can span one or many projects.
 1. **Resolve participating projects and teams** from the sprint identifier(s)
 2. **Dependency Analysis** → Cross-Team Dependency Agent (across all participating projects)
 3. **Environment Preparation** → Environment Validation Agent (all relevant environments from all participating project configs)
-4. **Team Execution** → Individual Team Conductors run their project-specific story workflows in parallel
+4. **Team Execution** → Individual Team Conductors run their project-specific 5-block story workflows in parallel (including automation script generation per story)
 5. **Regression Coordination** → Regression Impact Agent (cross-project scope)
 6. **Metrics Collection** → Test Metrics Agent (sprint dashboard aggregated across projects)
 7. **Sprint Readiness** → Release Readiness Agent (evaluate quality gates — using the strictest threshold across participating projects for each gate)
@@ -154,7 +154,7 @@ Maintain `org_runs/<scope_id>/org_status_dashboard.md`:
 ## Participating Projects
 | Project | Teams | Workflow Type | Status |
 |---------|-------|--------------|--------|
-| PULSE | PFPT, PFPM | 4-block (inherited) | 🟢 |
+| PULSE | PFPT, PFPM | 5-block (inherited) | 🟢 |
 | GXNG | GX1, GX2 | 3-block (custom) | 🟡 |
 
 ## Workflow Progress
