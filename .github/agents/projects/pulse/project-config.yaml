@@ -173,19 +173,20 @@ security:
 
 # ─────────────────────────────────────────────────────────
 # DOMAIN KNOWLEDGE
-# Path to project-specific knowledge files loaded into the SLM.
+# Path to project-specific knowledge JSON files.
+# Agents read these files directly for domain context.
 # ─────────────────────────────────────────────────────────
 knowledge:
   base_path: "knowledge_base/projects/pulse"
   categories:
     - id: "qa_testing"
-      source: "slm/knowledge/qa_testing.json"
+      source: "knowledge_base/projects/pulse/qa_testing.json"
     - id: "qa_automation"
-      source: "slm/knowledge/qa_automation.json"
+      source: "knowledge_base/projects/pulse/qa_automation.json"
     - id: "private_markets"
-      source: "slm/knowledge/private_markets_domain.json"
+      source: "knowledge_base/projects/pulse/private_markets_domain.json"
     - id: "jira_xray"
-      source: "slm/knowledge/jira_xray.json"
+      source: "knowledge_base/projects/pulse/jira_xray.json"
 
 # ─────────────────────────────────────────────────────────
 # KNOWN ISSUES & WORKAROUNDS

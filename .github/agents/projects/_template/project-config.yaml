@@ -21,8 +21,7 @@
 #          name: "Your Project Name"
 #          config_path: ".github/agents/projects/<your-id>/project-config.yaml"
 #          active: true
-# 5. Run: python -m slm setup  (to reload knowledge)
-# 6. Test: @conductor-agent Process YOUR_KEY-1234
+# 5. Test: @conductor-agent Process YOUR_KEY-1234
 # ============================================================
 
 project:
@@ -245,9 +244,9 @@ security:
 
 # ─────────────────────────────────────────────────────────
 # DOMAIN KNOWLEDGE
-# Path to project-specific knowledge files for the SLM.
-# Add JSON files with domain knowledge under your project's
-# knowledge_base/projects/<id>/ directory.
+# Path to project-specific knowledge JSON files.
+# Agents read these files directly for domain context.
+# Add JSON files under knowledge_base/projects/<id>/.
 # ─────────────────────────────────────────────────────────
 knowledge:
   base_path: "knowledge_base/projects/_template"

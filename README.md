@@ -10,7 +10,7 @@ Every project in the organization can have its own:
 - **Coverage requirements** (different mandatory test categories)
 - **Quality thresholds** (stricter gates for critical projects)
 - **Jira configuration** (different custom fields, CSV formats, link types)
-- **Domain knowledge** (project-specific SLM knowledge base)
+- **Domain knowledge** (project-specific knowledge base JSON files)
 
 No code changes needed. Register a project config file and go.
 
@@ -68,10 +68,8 @@ No code changes needed. Register a project config file and go.
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐                         │
 │  │ PULSE    │  │ GXNG     │  │ ALPHA    │  Project-specific       │
 │  │ knowledge│  │ knowledge│  │ knowledge│  domain knowledge       │
-│  └──────────┘  └──────────┘  └──────────┘                         │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │  SLM (Small Language Model) - Local RAG + All Knowledge       │  │
-│  └───────────────────────────────────────────────────────────────┘  │
+│  └──────────┘  └──────────┘  └──────────┘  (JSON files read       │
+│                                             directly by agents)    │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -167,26 +165,14 @@ project_registry:
 Create JSON files in `knowledge_base/projects/<your-id>/` with domain-specific knowledge:
 
 ```json
-{
-  "metadata": {
-    "project": "MYPROJ",
-    "category": "domain_knowledge"
-  },
-  "entries": [
-    {
-      "id": "myproj_rule_1",
-      "text": "In MyProject, the reconciliation process requires matching on 3 keys: Account, Security, and Date.",
-      "category": "domain_knowledge",
-      "source": "architecture-doc"
-    }
-  ]
-}
-```
-
-Then reload the SLM:
-
-```bash
-python -m slm setup
+[
+  {
+    "id": "myproj_rule_1",
+    "text": "In MyProject, the reconciliation process requires matching on 3 keys: Account, Security, and Date.",
+    "category": "domain_knowledge",
+    "tags": ["reconciliation", "matching"]
+  }
+]
 ```
 
 ### Step 6: Start using it
@@ -410,7 +396,7 @@ Scans code, dependencies, secrets, and OWASP compliance. CRITICAL findings block
 @automation-agent Automation report for all projects
 ```
 
-Analyzes test cases for automation ROI, generates scripts in the project's framework, and tracks automation health. For Playwright + TypeScript projects, uses the **Playwright Automation Skill** to generate production-ready code with:
+Analyzes test cases for automation ROI, generates scripts in the project's framework, and tracks automation health. For Playwright + JavaScript projects, uses the **Playwright Automation Skill** to generate production-ready code with:
 - **UI tests** — Page Object Model, auto-wait, semantic locators
 - **API tests** — BaseApiClient, schema validation, auth handling
 - **Data comparison tests** — DataComparisonEngine, field mappings, aggregation reconciliation
@@ -507,9 +493,6 @@ knowledge_base/
       qa_automation.json
       private_markets_domain.json
       jira_xray.json
-
-slm/                               # Small Language Model (local RAG)
-requirements.txt                    # Python dependencies
 ```
 
 ---

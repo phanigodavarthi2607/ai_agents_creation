@@ -1,5 +1,2 @@
-# Vector database files (regenerated from seeds)
-.vectordb/
-
-# Training data (accumulated during workflow runs)
+# Training data (not needed — no local LLM)
 training_data/
