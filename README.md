@@ -1,6 +1,6 @@
 # Organization-Level QA Agent Suite
 
-An AI-powered, multi-project QA agent ecosystem providing end-to-end quality assurance automation — from individual story testing to organization-wide release readiness across any number of projects, domains, and teams.
+An AI-powered, multi-project QA agent ecosystem providing end-to-end quality assurance automation — from individual story testing to organization-wide release readiness across any number of projects, domains, and teams. **37 specialized agents** covering the full QA lifecycle: story processing, automation, security, predictive intelligence, self-healing tests, exploratory testing, performance, accessibility, data quality, and organizational learning.
 
 ## Key Design Principle: One System, Any Project
 
@@ -308,7 +308,21 @@ automation:
 
 ## Agent Inventory
 
-### Organization-Level Agents (cross-project)
+### Team-Level Story Agents (9 agents)
+
+| Agent | File | Used In |
+|-------|------|---------|
+| Team Conductor | `conductor-agent.md` | Reads project config, runs the right workflow |
+| Knowledge Base | `KnowledgeBase-agent.md` | Uses project's domain routing rules |
+| Story | `story-agent.md` | Works with any Jira project key |
+| Analysis | `analysis-agent.md` | Builds discovery context |
+| Test Planning | `test-planning-agent.md` | Selects techniques based on story |
+| Test Design | `test-design-agent.md` | Generates automation-ready test cases per project's coverage reqs |
+| Test Data | `TestData-agent.md` | Generates realistic test data |
+| Test Review | `test-review-agent.md` | Reviews against project's standards + automation readiness |
+| Publish Jira | `publish-jira-agent.md` | Uses project's Jira field mappings |
+
+### Organization-Level Agents (10 agents)
 
 | Agent | File | Key Capability |
 |-------|------|---------------|
@@ -323,19 +337,53 @@ automation:
 | Environment Validation | `environment-validation-agent.md` | Validates per project's environment config |
 | API Contract Testing | `api-contract-testing-agent.md` | Cross-project consumer impact analysis |
 
-### Team-Level Agents (per project, configurable)
+### Intelligent Test Execution Agents (3 agents)
 
-| Agent | File | Used In |
-|-------|------|---------|
-| Team Conductor | `conductor-agent.md` | Reads project config, runs the right workflow |
-| Knowledge Base | `KnowledgeBase-agent.md` | Uses project's domain routing rules |
-| Story | `story-agent.md` | Works with any Jira project key |
-| Analysis | `analysis-agent.md` | Builds discovery context |
-| Test Planning | `test-planning-agent.md` | Selects techniques based on story |
-| Test Design | `test-design-agent.md` | Generates test cases per project's coverage reqs |
-| Test Data | `TestData-agent.md` | Generates realistic test data |
-| Test Review | `test-review-agent.md` | Reviews against project's standards |
-| Publish Jira | `publish-jira-agent.md` | Uses project's Jira field mappings |
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Test Prioritization | `test-prioritization-agent.md` | Ranks tests by failure probability using historical data + code change analysis |
+| Self-Healing Test | `self-healing-test-agent.md` | Detects locator/API shifts, generates patched scripts as PRs |
+| Visual Regression | `visual-regression-agent.md` | Compares UI screenshots across builds, classifies changes |
+
+### Predictive Quality Intelligence Agents (3 agents)
+
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Defect Prediction | `defect-prediction-agent.md` | Risk heatmap per module using complexity, churn, and defect history |
+| Release Risk Prediction | `release-risk-prediction-agent.md` | Incident probability score for upcoming releases |
+| Flaky Test Prediction | `flaky-test-prediction-agent.md` | Predicts flakiness in new tests before they enter CI |
+
+### Intelligent Test Generation Agents (3 agents)
+
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Mutation Testing | `mutation-testing-agent.md` | Introduces code mutations to reveal hidden coverage gaps |
+| Exploratory Testing | `exploratory-testing-agent.md` | Autonomous UI exploration with anomaly detection |
+| Chaos/Resilience Testing | `chaos-resilience-agent.md` | Controlled failure injection with resilience scoring |
+
+### Data & AI-Powered Analysis Agents (3 agents)
+
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Root Cause Analysis | `root-cause-analysis-agent.md` | Correlates failures with code changes, deployments, and past patterns |
+| Test Impact Analysis | `test-impact-analysis-agent.md` | Function-level code-to-test mapping, minimal test set selection |
+| Log Analysis | `log-analysis-agent.md` | Monitors logs during test execution for anomalies |
+
+### Knowledge & Learning Agents (3 agents)
+
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Test Knowledge Graph | `test-knowledge-graph-agent.md` | Queryable graph connecting requirements, tests, defects, code, teams |
+| QA Copilot | `qa-copilot-agent.md` | Interactive AI assistant routing queries to specialist agents |
+| Lessons Learned | `lessons-learned-agent.md` | Extracts actionable lessons from sprint/release patterns |
+
+### Performance & Specialized Testing Agents (3 agents)
+
+| Agent | File | Key Capability |
+|-------|------|---------------|
+| Performance Testing | `performance-testing-agent.md` | Load/stress/soak/spike testing with SLA validation |
+| Accessibility Testing | `accessibility-testing-agent.md` | WCAG 2.1/2.2 compliance scanning and remediation guidance |
+| Data Quality Testing | `data-quality-testing-agent.md` | Source-to-target validation across 6 data quality dimensions |
 
 ---
 
@@ -482,6 +530,36 @@ Per-project and aggregated metrics → environment health → risk summary.
   defect-triage-agent.md
   environment-validation-agent.md
   api-contract-testing-agent.md
+
+  # Intelligent test execution agents
+  test-prioritization-agent.md      # Rank tests by failure probability
+  self-healing-test-agent.md        # Auto-patch broken selectors/endpoints
+  visual-regression-agent.md        # Screenshot comparison across builds
+
+  # Predictive quality intelligence agents
+  defect-prediction-agent.md        # Risk heatmap per code module
+  release-risk-prediction-agent.md  # Incident probability for releases
+  flaky-test-prediction-agent.md    # Predict flakiness before CI
+
+  # Intelligent test generation agents
+  mutation-testing-agent.md         # Code mutations to find coverage gaps
+  exploratory-testing-agent.md      # Autonomous UI exploration
+  chaos-resilience-agent.md         # Controlled failure injection
+
+  # Data & AI-powered analysis agents
+  root-cause-analysis-agent.md      # Correlate failures with changes
+  test-impact-analysis-agent.md     # Function-level code-to-test mapping
+  log-analysis-agent.md             # Log anomaly detection during tests
+
+  # Knowledge & learning agents
+  test-knowledge-graph-agent.md     # Queryable requirement-test-defect graph
+  qa-copilot-agent.md               # Interactive QA assistant
+  lessons-learned-agent.md          # Sprint/release lessons extraction
+
+  # Performance & specialized testing agents
+  performance-testing-agent.md      # Load/stress/soak/spike testing
+  accessibility-testing-agent.md    # WCAG compliance scanning
+  data-quality-testing-agent.md     # Source-to-target data validation
 
   # Skills (detailed code generation blueprints used by agents)
   skills/
@@ -704,6 +782,24 @@ You don't always need the full workflow. Each agent can be invoked independently
 | Check regression impact | `@regression-impact-agent Analyze impact of PULSE-4521` |
 | Triage a defect | `@defect-triage-agent Triage PULSE-4521` |
 | Validate API contracts | `@api-contract-testing-agent Check contracts for PULSE` |
+| Prioritize tests for CI | `@test-prioritization-agent Prioritize tests for PULSE sprint scope` |
+| Diagnose broken tests | `@self-healing-test-agent Diagnose failures in PULSE UI suite` |
+| Compare UI screenshots | `@visual-regression-agent Compare build 4.2 against baseline for PULSE` |
+| Predict defect-prone modules | `@defect-prediction-agent Predict risks for PULSE current sprint` |
+| Predict release incidents | `@release-risk-prediction-agent Predict risk for PFPM Release 3.2` |
+| Scan new tests for flakiness | `@flaky-test-prediction-agent Scan PR #142 for flakiness risk` |
+| Run mutation testing | `@mutation-testing-agent Mutate src/services/position-calculator for PULSE` |
+| Run exploratory testing | `@exploratory-testing-agent Explore /dashboard for PULSE` |
+| Test resilience | `@chaos-resilience-agent Test fund-valuation-service resilience for PULSE` |
+| Find root cause of failure | `@root-cause-analysis-agent Analyze failures in pipeline run #4521` |
+| Get minimal test set | `@test-impact-analysis-agent Analyze impact of PR #142 for PULSE` |
+| Analyze test logs | `@log-analysis-agent Analyze logs from PULSE QA environment last 24h` |
+| Query knowledge graph | `@test-knowledge-graph-agent Which requirements have no test coverage?` |
+| Ask QA questions | `@qa-copilot-agent What testing techniques for currency conversion?` |
+| Extract lessons learned | `@lessons-learned-agent Extract lessons from PFPT Sprint 24` |
+| Run performance tests | `@performance-testing-agent Load test /api/positions for PULSE` |
+| Check accessibility | `@accessibility-testing-agent Scan /dashboard for WCAG AA for PULSE` |
+| Validate data quality | `@data-quality-testing-agent Validate fund-positions pipeline for PULSE` |
 
 ---
 
