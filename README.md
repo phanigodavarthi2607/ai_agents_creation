@@ -497,6 +497,282 @@ knowledge_base/
 
 ---
 
+## How to Use This System (Detailed Guide)
+
+### Prerequisites
+
+You need only two things:
+
+1. **GitHub Copilot** — your company's AI assistant (chat or IDE integration)
+2. **This repository** — cloned or accessible in your IDE (VS Code with Copilot)
+
+No servers, no databases, no Python, no Docker. The entire system is a set of **markdown instruction files** and **JSON knowledge files** that Copilot reads and follows.
+
+### How It Works
+
+The agent `.md` files are **Copilot custom instructions** (also called "agent definitions" or "custom agents" depending on your Copilot setup). When you invoke an agent by name in Copilot Chat, Copilot reads the corresponding `.md` file and follows its instructions — using your Jira data, project config, and knowledge files as context.
+
+```
+You type in Copilot Chat:
+    @conductor-agent Process PULSE-3730
+
+What happens:
+    1. Copilot reads conductor-agent.md
+    2. conductor-agent.md tells it to extract "PULSE" from "PULSE-3730"
+    3. It reads org-config.yaml to find PULSE's config_path
+    4. It reads projects/pulse/project-config.yaml
+    5. It determines the workflow blocks (KB → Discovery → Quality → Release)
+    6. It runs each block's agents in sequence, gating on your approval
+```
+
+### Setup in VS Code with Copilot
+
+#### Option A: GitHub Copilot Agents (if your org has Copilot Agents enabled)
+
+Each `.md` file in `.github/agents/` is automatically available as a Copilot agent. You invoke them with `@agent-name` in Copilot Chat.
+
+#### Option B: Copilot Chat with file references
+
+If your org uses standard Copilot Chat without custom agents, you reference the instruction files manually:
+
+```
+# In Copilot Chat, attach the agent file as context:
+@workspace /explain #file:.github/agents/conductor-agent.md
+
+Then type your prompt:
+"Follow the instructions in the attached conductor-agent.md file. Process story PULSE-3730."
+```
+
+#### Option C: Copilot Custom Instructions (`.github/copilot-instructions.md`)
+
+Create a `.github/copilot-instructions.md` file that points Copilot to the agent system:
+
+```markdown
+When I mention an agent by name (e.g., "conductor-agent", "story-agent"),
+read the corresponding file from .github/agents/<agent-name>.md and follow
+its instructions precisely.
+
+Always resolve the project from the Jira key prefix using org-config.yaml.
+Always read the project's project-config.yaml before taking action.
+```
+
+---
+
+### Day-to-Day Usage: Common Scenarios
+
+#### Scenario 1: Process a Jira Story (Team-Level)
+
+This is the most common operation. It runs the full test case lifecycle for a single story.
+
+```
+@conductor-agent Process PULSE-3730
+```
+
+**What happens step by step:**
+
+1. **Knowledge Base block** — The KB Agent fetches the story from Jira, collects domain knowledge from `knowledge_base/projects/pulse/`, and creates `PFPT/PULSE-3730_knowledge_base.md`
+2. Copilot asks you for the gate token: `KB_APPROVED`
+3. **Discovery block** — Analysis Agent and Test Planning Agent analyze the story, select testing techniques, and produce `runs/PULSE-3730/discovery_context.json`
+4. You approve: `DISCOVERY_APPROVED`
+5. **Quality block** — Test Design Agent generates test cases, Test Data Agent creates data, Test Review Agent reviews. Output: `runs/PULSE-3730/quality_pack.json` and `runs/PULSE-3730/PULSE-3730_testcases.csv`
+6. You approve: `QUALITY_APPROVED`
+7. **Release block** — Publish Jira Agent creates test cases in Jira, links them to the story with "is tested by", and produces `runs/PULSE-3730/publish_report.json`
+8. You approve: `APPROVE_FOR_JIRA`
+
+**Files created during this flow:**
+
+```
+PFPT/PULSE-3730_knowledge_base.md       # Domain knowledge document
+runs/PULSE-3730/discovery_context.json   # Analysis + test techniques
+runs/PULSE-3730/quality_pack.json        # All test cases (structured JSON)
+runs/PULSE-3730/PULSE-3730_testcases.csv # Test cases in Jira CSV format
+runs/PULSE-3730/review_pack.md           # Review feedback
+runs/PULSE-3730/publish_report.json      # Jira publishing results
+runs/PULSE-3730/agent_bus.jsonl          # Communication log between agents
+runs/PULSE-3730/status_dashboard.md      # Visual status of each block
+```
+
+#### Scenario 2: Sprint Coordination (Org-Level)
+
+Coordinate QA across teams and projects for a sprint.
+
+```
+@org-conductor-agent Sprint coordination for PFPT Sprint 24
+```
+
+This triggers a sequence of org-level agents:
+1. Cross-Team Dependency Agent checks for blockers between teams
+2. Environment Validation Agent verifies QA environments
+3. Team Conductors process stories in parallel (one per team)
+4. Automation Agent identifies new candidates for automation
+5. Security Testing Agent runs SAST scan on sprint code changes
+6. Regression Impact Agent scopes cross-team regression
+7. Test Metrics Agent produces a sprint dashboard
+8. Release Readiness Agent evaluates 9 quality gates
+
+#### Scenario 3: Release Go/No-Go (Org-Level)
+
+Before a release, get a formal assessment.
+
+```
+@org-conductor-agent Release QA for PFPM Release 3.2
+```
+
+Or for a multi-project release:
+
+```
+@org-conductor-agent Release QA for Q3 2026 Release [PULSE, GXNG, ALPHA]
+```
+
+The Release Readiness Agent evaluates all 9 gates and produces a GO / NO_GO / CONDITIONAL_GO recommendation with evidence for each gate.
+
+#### Scenario 4: Generate Automation Scripts
+
+After test cases are designed, generate Playwright automation code.
+
+```
+@automation-agent Generate scripts for PULSE-3730
+```
+
+The Automation Agent reads `quality_pack.json`, loads the Playwright Automation Skill (`.github/agents/skills/playwright-automation.md`), and generates:
+- Page Object classes (`src/pages/`)
+- API client classes (`src/api/`)
+- Test files (`tests/ui/`, `tests/api/`, `tests/data/`)
+- Fixtures and test data (`src/fixtures/`)
+- CI/CD pipeline config (`.github/workflows/`)
+
+All generated code is JavaScript with Playwright.
+
+#### Scenario 5: Defect Triage
+
+When a critical defect is found:
+
+```
+@org-conductor-agent Defect escalation for PULSE-4521
+```
+
+The system auto-detects the project from the key, triages severity, analyzes cross-project impact, notifies affected teams, and updates release readiness.
+
+#### Scenario 6: Security Scan
+
+```
+@security-testing-agent Full security assessment for project PULSE
+```
+
+Runs SAST, dependency scanning, secrets detection, and OWASP compliance checks. Critical findings are flagged as release blockers.
+
+#### Scenario 7: Quality Assessment (On-Demand)
+
+```
+@org-conductor-agent Quality assessment for all projects
+```
+
+Produces an executive dashboard with per-project metrics, environment health, and overall risk posture.
+
+---
+
+### Using Individual Agents Directly
+
+You don't always need the full workflow. Each agent can be invoked independently:
+
+| What you want to do | Command |
+|---------------------|---------|
+| Fetch story details from Jira | `@story-agent PULSE-3730` |
+| Build knowledge base for a story | `@KnowledgeBase-agent PULSE-3730` |
+| Analyze a story for testing approach | `@analysis-agent Analyze PULSE-3730` |
+| Select testing techniques | `@test-planning-agent Plan for PULSE-3730` |
+| Generate test cases | `@test-design-agent Generate for PULSE-3730` |
+| Generate test data | `@TestData-agent Generate data for PULSE-3730` |
+| Review test cases | `@test-review-agent Review PULSE-3730` |
+| Publish to Jira | `@publish-jira-agent Publish PULSE-3730` (requires `APPROVE_FOR_JIRA`) |
+| Check automation candidacy | `@automation-agent Analyze PULSE-3730 for automation candidacy` |
+| Run automation health check | `@automation-agent Health check for project PULSE` |
+| Find flaky tests | `@automation-agent Flaky test analysis for project PULSE` |
+| Check dependencies | `@cross-team-dependency-agent Check dependencies for PFPT Sprint 24` |
+| Validate environment | `@environment-validation-agent Validate PULSE QA environment` |
+| Get test metrics | `@test-metrics-agent Dashboard for project PULSE` |
+| Check regression impact | `@regression-impact-agent Analyze impact of PULSE-4521` |
+| Triage a defect | `@defect-triage-agent Triage PULSE-4521` |
+| Validate API contracts | `@api-contract-testing-agent Check contracts for PULSE` |
+
+---
+
+### The Gate System (Human-in-the-Loop)
+
+Every workflow block requires your explicit approval before the next block starts. This is the "gate" system:
+
+```
+Conductor: "Knowledge Base block complete. Files created:
+  - PFPT/PULSE-3730_knowledge_base.md
+  Please provide gate token: KB_APPROVED"
+
+You: "KB_APPROVED"
+
+Conductor: "Starting Discovery block..."
+```
+
+**You control the pace.** No test cases get published to Jira without your explicit `APPROVE_FOR_JIRA` token. You can review, ask questions, request changes, or reject at any gate.
+
+Gate tokens for the default 4-block workflow:
+1. `KB_APPROVED` — after knowledge base is built
+2. `DISCOVERY_APPROVED` — after analysis and test planning
+3. `QUALITY_APPROVED` — after test case design, data, and review
+4. `APPROVE_FOR_JIRA` — before publishing to Jira
+
+---
+
+### Customizing for Your Team
+
+#### Add a new project
+
+Follow the 6-step onboarding guide in the "How to Onboard a New Project" section above.
+
+#### Change a project's workflow
+
+Edit the project's `project-config.yaml` — change the `story_workflow` section. You can add/remove blocks, change which agents run in each block, and set different gate tokens.
+
+#### Add domain knowledge
+
+Drop JSON files into `knowledge_base/projects/<your-project-id>/`. The Knowledge Base Agent reads them for domain context. No setup command needed — just add the files.
+
+#### Make quality gates stricter
+
+Add overrides in your project config:
+
+```yaml
+quality_gates_overrides:
+  G1_test_execution:
+    pass_rate_threshold: 99.0
+  G4_coverage:
+    requirements_coverage_threshold: 95.0
+```
+
+#### Use a different automation framework
+
+Update your project config:
+
+```yaml
+automation:
+  framework: "Cypress"
+  language: "JavaScript"
+```
+
+The Automation Agent will adapt. The Playwright Automation Skill only activates when `framework: "Playwright"` and `language: "JavaScript"`.
+
+---
+
+### What You Need vs What You Don't
+
+| You need | You do NOT need |
+|----------|----------------|
+| VS Code with Copilot | Ollama or any local LLM |
+| Access to your Jira instance | ChromaDB or any vector database |
+| This repository cloned locally | Python, pip, or any Python packages |
+| Node.js (only for running Playwright tests) | Docker (unless your CI requires it) |
+| | GPU or fine-tuning infrastructure |
+
+---
+
 ## Anti-Hallucination Guardrails
 
 Every agent includes strict rules:
